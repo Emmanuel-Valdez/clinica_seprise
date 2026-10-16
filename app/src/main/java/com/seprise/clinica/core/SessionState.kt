@@ -1,4 +1,4 @@
-package com.seprise.clinica
+package com.seprise.clinica.core
 
 /** Rol del usuario logueado. */
 enum class Rol { ADMINISTRATIVO, MEDICO, PACIENTE }

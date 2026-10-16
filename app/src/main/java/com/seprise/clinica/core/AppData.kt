@@ -1,4 +1,4 @@
-package com.seprise.clinica
+package com.seprise.clinica.core
 
 /**
  * Almacenes en memoria del TP1 (CU01..CU08). Los crea y congela dev1; cada lane

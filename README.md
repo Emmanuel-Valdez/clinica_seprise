@@ -5,6 +5,19 @@ Paquete `com.seprise.clinica`, minSdk 24. Abrir esta carpeta en Android Studio.
 
 Docs: `../../01-planificacion-diseno/entrega-tp1-casos-uso.md` (spec), `../DISENO-FIGMA.md` (diseño), `../CREAR-PROYECTO.md` (ramas).
 
+## Estructura de paquetes
+
+Feature-first por dominio bajo `com.seprise.clinica`.
+
+- `MainActivity.kt` — launcher (decide login vs. shell)
+- `core/` — estado/datos compartidos: `AppData`, `SessionState`
+- `auth/` — `LoginActivity`
+- `shell/` — `MainNavActivity` (navegación por rol)
+- `pacientes/` — `PerfilPacienteActivity` (y el ABM de CU02)
+
+Cada CU nuevo = un paquete de dominio propio (`turnos/`, `agenda/`, `atencion/`, `estudios/`, `insumos/`, `honorarios/`). Las pantallas de un dominio se apuntan como `com.seprise.clinica.<dominio>.<X>Activity`. Los recursos (`res/`) van planos con prefijo (`cu01_`, `activity_`) — Android no soporta subcarpetas.
+
+
 ## Credenciales de prueba (CU01 — login)
 
 No hay backend: el login valida usuario + contraseña + rol contra usuarios mock en memoria

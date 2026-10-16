@@ -23,16 +23,16 @@
         </activity>
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".auth.LoginActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name=".MainNavActivity"
+            android:name=".shell.MainNavActivity"
             android:exported="false" />
 
         <activity
-            android:name=".PerfilPacienteActivity"
+            android:name=".pacientes.PerfilPacienteActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
     </application>

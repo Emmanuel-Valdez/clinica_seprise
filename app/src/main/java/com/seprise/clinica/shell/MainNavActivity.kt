@@ -1,4 +1,4 @@
-package com.seprise.clinica
+package com.seprise.clinica.shell
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -14,6 +14,11 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.seprise.clinica.R
+import com.seprise.clinica.auth.LoginActivity
+import com.seprise.clinica.core.Rol
+import com.seprise.clinica.core.SessionState
+import com.seprise.clinica.pacientes.PerfilPacienteActivity
 
 /**
  * CU01 — shell de navegación. Los ítems dependen del rol de la sesión (ver [modulosDe]).
@@ -24,13 +29,13 @@ class MainNavActivity : AppCompatActivity() {
 
     private data class Modulo(val clave: String, @param:StringRes val nombre: Int, val clase: String)
 
-    private val pacientes = Modulo("pacientes", R.string.cu01_nav_pacientes, "com.seprise.clinica.PacientesActivity")
-    private val agenda = Modulo("agenda", R.string.cu01_nav_agenda, "com.seprise.clinica.AgendaActivity")
-    private val turnos = Modulo("turnos", R.string.cu01_nav_turnos, "com.seprise.clinica.TurnosActivity")
-    private val atencion = Modulo("atencion", R.string.cu01_nav_atencion, "com.seprise.clinica.AtencionActivity")
-    private val estudios = Modulo("estudios", R.string.cu01_nav_estudios, "com.seprise.clinica.EstudiosActivity")
-    private val insumos = Modulo("insumos", R.string.cu01_nav_insumos, "com.seprise.clinica.InsumosActivity")
-    private val honorarios = Modulo("honorarios", R.string.cu01_nav_honorarios, "com.seprise.clinica.HonorariosActivity")
+    private val pacientes = Modulo("pacientes", R.string.cu01_nav_pacientes, "com.seprise.clinica.pacientes.PacientesActivity")
+    private val agenda = Modulo("agenda", R.string.cu01_nav_agenda, "com.seprise.clinica.agenda.AgendaActivity")
+    private val turnos = Modulo("turnos", R.string.cu01_nav_turnos, "com.seprise.clinica.turnos.TurnosActivity")
+    private val atencion = Modulo("atencion", R.string.cu01_nav_atencion, "com.seprise.clinica.atencion.AtencionActivity")
+    private val estudios = Modulo("estudios", R.string.cu01_nav_estudios, "com.seprise.clinica.estudios.EstudiosActivity")
+    private val insumos = Modulo("insumos", R.string.cu01_nav_insumos, "com.seprise.clinica.insumos.InsumosActivity")
+    private val honorarios = Modulo("honorarios", R.string.cu01_nav_honorarios, "com.seprise.clinica.honorarios.HonorariosActivity")
 
     private lateinit var contenedorItems: LinearLayout
     private lateinit var contenido: TextView

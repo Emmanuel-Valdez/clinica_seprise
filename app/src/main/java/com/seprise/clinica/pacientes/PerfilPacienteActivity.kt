@@ -1,4 +1,4 @@
-package com.seprise.clinica
+package com.seprise.clinica.pacientes
 
 import android.content.Intent
 import android.os.Bundle
@@ -11,6 +11,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.seprise.clinica.R
+import com.seprise.clinica.auth.LoginActivity
+import com.seprise.clinica.core.Rol
+import com.seprise.clinica.core.SessionState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
