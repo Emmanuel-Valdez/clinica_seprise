@@ -7,7 +7,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -15,6 +14,7 @@ import com.seprise.clinica.R
 import com.seprise.clinica.auth.LoginActivity
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
+import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -29,7 +29,7 @@ class PerfilPacienteActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableSePriseEdgeToEdge()
         setContentView(R.layout.activity_perfil_paciente)
         val root = findViewById<View>(R.id.cu01_root)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->

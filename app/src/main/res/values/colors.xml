@@ -2,10 +2,29 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <!-- tokens Figma 2026-10-16, agregar cuando el compañero pase nuevos -->
+
+    <!-- Paleta SePrise — extraída de Figma (ver 01-planificacion-diseno/diseno.md).
+         La app es siempre clara: el diseño no define modo oscuro. -->
+    <!-- Marca / texto -->
     <color name="seprise_blue">#FF006194</color>
     <color name="seprise_ink">#FF0B1C30</color>
     <color name="seprise_muted">#FF3F4850</color>
-    <color name="seprise_nav_bg">#FFE5EEFF</color>
+    <color name="seprise_placeholder">#FF707881</color>
     <color name="seprise_nav_text">#FF006591</color>
+
+    <!-- Superficies -->
+    <color name="seprise_bg">#FFF8F9FF</color>
+    <color name="seprise_surface">#FFFFFFFF</color>
+    <color name="seprise_surface_alt">#FFEFF4FF</color>
+    <color name="seprise_container">#FFDCE9FF</color>
+    <color name="seprise_nav_bg">#FFE5EEFF</color>
+    <color name="seprise_outline">#FFBFC7D2</color>
+
+    <!-- Estados -->
+    <color name="seprise_success">#FF006947</color>
+    <color name="seprise_success_dark">#FF00855B</color>
+    <color name="seprise_error">#FFBA1A1A</color>
+    <color name="seprise_error_dark">#FF93000A</color>
+    <color name="seprise_error_container">#FFFFDAD6</color>
+    <color name="seprise_warn">#FFB45309</color>
 </resources>

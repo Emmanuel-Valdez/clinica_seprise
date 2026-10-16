@@ -4,6 +4,7 @@
     android:id="@+id/cu01_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/seprise_bg"
     android:fillViewport="true">
 
     <LinearLayout
@@ -61,36 +62,30 @@
 
         <EditText
             android:id="@+id/cu01_perfil_telefono"
-            style="@style/Text.SePrise.Body"
+            style="@style/Widget.SePrise.Input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:hint="@string/cu01_perfil_label_telefono"
-            android:inputType="phone"
-            android:textColor="@color/seprise_ink"
-            android:textColorHint="@color/seprise_muted" />
+            android:inputType="phone" />
 
         <EditText
             android:id="@+id/cu01_perfil_direccion"
-            style="@style/Text.SePrise.Body"
+            style="@style/Widget.SePrise.Input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:hint="@string/cu01_perfil_label_direccion"
-            android:inputType="text"
-            android:textColor="@color/seprise_ink"
-            android:textColorHint="@color/seprise_muted" />
+            android:inputType="text" />
 
         <EditText
             android:id="@+id/cu01_perfil_password"
-            style="@style/Text.SePrise.Body"
+            style="@style/Widget.SePrise.Input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:hint="@string/cu01_perfil_label_password"
-            android:inputType="textPassword"
-            android:textColor="@color/seprise_ink"
-            android:textColorHint="@color/seprise_muted" />
+            android:inputType="textPassword" />
 
         <Button
             android:id="@+id/cu01_perfil_btn_guardar"

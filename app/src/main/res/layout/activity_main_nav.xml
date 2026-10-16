@@ -4,6 +4,7 @@
     android:id="@+id/cu01_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/seprise_bg"
     android:orientation="vertical">
 
     <LinearLayout
@@ -49,6 +50,7 @@
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/seprise_surface"
         android:fillViewport="true">
 
         <LinearLayout

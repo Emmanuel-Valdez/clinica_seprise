@@ -9,7 +9,6 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -18,6 +17,7 @@ import com.seprise.clinica.R
 import com.seprise.clinica.auth.LoginActivity
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
+import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.pacientes.PerfilPacienteActivity
 
 /**
@@ -43,7 +43,7 @@ class MainNavActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableSePriseEdgeToEdge()
         setContentView(R.layout.activity_main_nav)
         val root = findViewById<View>(R.id.cu01_root)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->

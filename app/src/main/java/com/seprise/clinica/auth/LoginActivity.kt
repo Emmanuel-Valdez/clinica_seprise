@@ -7,13 +7,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
+import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.shell.MainNavActivity
 
 /** CU01 — ingreso por rol (administrativo / médico / paciente) contra credenciales mock. */
@@ -21,7 +21,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableSePriseEdgeToEdge()
         setContentView(R.layout.activity_login)
         val root = findViewById<View>(R.id.cu01_root)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->

@@ -4,6 +4,7 @@
     android:id="@+id/cu01_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/seprise_bg"
     android:fillViewport="true">
 
     <LinearLayout
@@ -28,26 +29,22 @@
 
         <EditText
             android:id="@+id/cu01_input_usuario"
-            style="@style/Text.SePrise.Body"
+            style="@style/Widget.SePrise.Input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:hint="@string/cu01_label_usuario"
             android:inputType="text"
-            android:textColor="@color/seprise_ink"
-            android:textColorHint="@color/seprise_muted"
             android:autofillHints="username" />
 
         <EditText
             android:id="@+id/cu01_input_password"
-            style="@style/Text.SePrise.Body"
+            style="@style/Widget.SePrise.Input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:hint="@string/cu01_label_password"
             android:inputType="textPassword"
-            android:textColor="@color/seprise_ink"
-            android:textColorHint="@color/seprise_muted"
             android:autofillHints="password" />
 
         <TextView
@@ -92,7 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:textColor="?attr/colorError"
+            android:textColor="@color/seprise_error"
             android:visibility="gone" />
 
         <Button
