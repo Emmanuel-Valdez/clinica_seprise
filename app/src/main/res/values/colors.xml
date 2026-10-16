@@ -2,7 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <!-- ponytail: tokens Figma 2026-10-16, agregar cuando el compañero pase nuevos -->
+    <!-- tokens Figma 2026-10-16, agregar cuando el compañero pase nuevos -->
     <color name="seprise_blue">#FF006194</color>
     <color name="seprise_ink">#FF0B1C30</color>
     <color name="seprise_muted">#FF3F4850</color>

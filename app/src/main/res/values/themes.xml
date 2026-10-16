@@ -11,7 +11,7 @@
 
     <style name="Theme.MyApplication" parent="Base.Theme.MyApplication" />
 
-    <!-- ponytail: 3 estilos Figma, agregar cuando haya más variantes -->
+    <!-- 3 estilos Figma, agregar cuando haya más variantes -->
     <style name="Text.SePrise.Title" parent="TextAppearance.Material3.TitleLarge">
         <item name="android:fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textSize">@dimen/text_title</item>
