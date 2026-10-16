@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ponytail: tokens Figma 2026-10-16 -->
+    <dimen name="radius_button">8dp</dimen>
+    <dimen name="radius_card">12dp</dimen>
+    <dimen name="radius_nav">8dp</dimen>
+    <dimen name="text_btn">12sp</dimen>
+    <dimen name="text_title">18sp</dimen>
+    <dimen name="text_body">12sp</dimen>
+    <dimen name="text_nav">11sp</dimen>
+    <dimen name="elevation_card">2dp</dimen>
+</resources>

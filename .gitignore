@@ -1,0 +1,13 @@
+# Android Studio — seprise-app (git propio acá)
+*.iml
+.gradle/
+/local.properties
+.idea/
+.DS_Store
+/build/
+/app/build/
+/app/release/
+*.apklib
+*.dex
+local.properties
+# opencode/IA: nada de AGENTS.md, openspec/, skills o locks dentro de esta carpeta

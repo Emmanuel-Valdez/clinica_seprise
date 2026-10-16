@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sombra via CardView cardElevation (@dimen/elevation_card); el shape solo da fondo+radio -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/radius_card" />
+    <solid android:color="@color/white" />
+</shape>
