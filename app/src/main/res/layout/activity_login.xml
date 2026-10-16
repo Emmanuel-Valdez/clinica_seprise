@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- paddings son espaciado de layout, no tokens Figma; mover a dimens cuando el diseñador los pase -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cu01_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:padding="24dp">
+
+        <TextView
+            style="@style/Text.SePrise.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cu01_login_title" />
+
+        <TextView
+            style="@style/Text.SePrise.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/cu01_login_subtitle" />
+
+        <EditText
+            android:id="@+id/cu01_input_usuario"
+            style="@style/Text.SePrise.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:hint="@string/cu01_label_usuario"
+            android:inputType="text"
+            android:textColor="@color/seprise_ink"
+            android:textColorHint="@color/seprise_muted"
+            android:autofillHints="username" />
+
+        <EditText
+            android:id="@+id/cu01_input_password"
+            style="@style/Text.SePrise.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="@string/cu01_label_password"
+            android:inputType="textPassword"
+            android:textColor="@color/seprise_ink"
+            android:textColorHint="@color/seprise_muted"
+            android:autofillHints="password" />
+
+        <TextView
+            style="@style/Text.SePrise.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/cu01_label_rol" />
+
+        <RadioGroup
+            android:id="@+id/cu01_roles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/cu01_role_administrativo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/cu01_rol_administrativo"
+                android:textColor="@color/seprise_ink" />
+
+            <RadioButton
+                android:id="@+id/cu01_role_medico"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cu01_rol_medico"
+                android:textColor="@color/seprise_ink" />
+
+            <RadioButton
+                android:id="@+id/cu01_role_paciente"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cu01_rol_paciente"
+                android:textColor="@color/seprise_ink" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/cu01_error"
+            style="@style/Text.SePrise.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="?attr/colorError"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/cu01_btn_login"
+            style="@style/Widget.SePrise.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/cu01_btn_login" />
+    </LinearLayout>
+</ScrollView>

@@ -1,3 +1,41 @@
 <resources>
     <string name="app_name">SePrise</string>
+
+    <!-- CU01 — login -->
+    <string name="cu01_login_title">Ingreso</string>
+    <string name="cu01_login_subtitle">Ingresá con tu usuario, contraseña y rol.</string>
+    <string name="cu01_label_usuario">Usuario</string>
+    <string name="cu01_label_password">Contraseña</string>
+    <string name="cu01_label_rol">Rol</string>
+    <string name="cu01_rol_administrativo">Administrativo</string>
+    <string name="cu01_rol_medico">Médico</string>
+    <string name="cu01_rol_paciente">Paciente</string>
+    <string name="cu01_btn_login">Ingresar</string>
+    <string name="cu01_error_campos_vacios">Completá usuario y contraseña.</string>
+    <string name="cu01_error_credenciales">Usuario, contraseña o rol inválidos.</string>
+
+    <!-- CU01 — shell de navegación -->
+    <string name="cu01_btn_logout">Cerrar sesión</string>
+    <string name="cu01_btn_perfil">Perfil</string>
+    <string name="cu01_shell_content_hint">Seleccioná un módulo.</string>
+    <string name="cu01_proximamente">Módulo próximamente.</string>
+    <string name="cu01_nav_pacientes">Pacientes</string>
+    <string name="cu01_nav_agenda">Agenda</string>
+    <string name="cu01_nav_turnos">Turnos</string>
+    <string name="cu01_nav_atencion">Atención</string>
+    <string name="cu01_nav_estudios">Estudios</string>
+    <string name="cu01_nav_insumos">Insumos</string>
+    <string name="cu01_nav_honorarios">Honorarios</string>
+
+    <!-- CU01 — perfil del paciente -->
+    <string name="cu01_perfil_title">Mi perfil</string>
+    <string name="cu01_perfil_label_usuario">Usuario</string>
+    <string name="cu01_perfil_label_hc">Historia clínica</string>
+    <string name="cu01_perfil_label_empadronamiento">N° empadronamiento</string>
+    <string name="cu01_perfil_label_telefono">Teléfono</string>
+    <string name="cu01_perfil_label_direccion">Dirección</string>
+    <string name="cu01_perfil_label_password">Nueva contraseña</string>
+    <string name="cu01_perfil_btn_guardar">Guardar cambios</string>
+    <string name="cu01_perfil_guardado">Cambios guardados.</string>
+    <string name="cu01_perfil_no_editable">(no editable)</string>
 </resources>
