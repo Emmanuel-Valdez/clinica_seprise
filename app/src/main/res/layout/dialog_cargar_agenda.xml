@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_dialog_titulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_blue"
+            android:text="Cargar Agenda" />
+
+        <TextView
+            android:id="@+id/tv_dialog_medico_nombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/seprise_muted"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Servicio -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Servicio:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <Spinner
+            android:id="@+id/spinner_servicio"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Circuito -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Circuito:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <RadioGroup
+            android:id="@+id/rg_circuito"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <RadioButton
+                android:id="@+id/rb_consultorios"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Consultorios"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rb_estudios"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estudios"
+                android:layout_marginStart="12dp" />
+        </RadioGroup>
+
+        <!-- Modalidad -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Modalidad:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <RadioGroup
+            android:id="@+id/rg_modalidad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <RadioButton
+                android:id="@+id/rb_con_turno"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Con Turno"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rb_orden_llegada"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Orden Llegada"
+                android:layout_marginStart="12dp" />
+        </RadioGroup>
+
+        <!-- Días de Atención -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Días de atención:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox android:id="@+id/cb_lunes" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Lun" />
+            <CheckBox android:id="@+id/cb_martes" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Mar" />
+            <CheckBox android:id="@+id/cb_miercoles" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Mié" />
+            <CheckBox android:id="@+id/cb_jueves" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Jue" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <CheckBox android:id="@+id/cb_viernes" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Vie" />
+            <CheckBox android:id="@+id/cb_sabado" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Sáb" />
+            <CheckBox android:id="@+id/cb_domingo" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Dom" />
+        </LinearLayout>
+
+        <!-- Horarios -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hora Inicio:"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_hora_inicio"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="08:00"
+                    android:inputType="time" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hora Fin:"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_hora_fin"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="16:00"
+                    android:inputType="time" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Duración cita y ayuno -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Duración (mins):"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_duracion_cita"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="20"
+                    android:inputType="number" />
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/cb_requiere_ayuno"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Requiere ayuno"
+                android:layout_marginStart="12dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
