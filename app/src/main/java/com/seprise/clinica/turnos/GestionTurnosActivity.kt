@@ -20,6 +20,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
+import com.seprise.clinica.core.Rol
+import com.seprise.clinica.core.SessionState
 import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Agenda
 import com.seprise.clinica.models.EstadoTurno
@@ -65,12 +67,19 @@ class GestionTurnosActivity : AppCompatActivity() {
     private fun cargarListaMedicos(filtro: String = "") {
         containerMedicos.removeAllViews()
 
+        // Si es médico, solo ve su propia tarjeta/agenda
+        val medicosBase = if (SessionState.rol == Rol.MEDICO && SessionState.loggedPersonId != null) {
+            AppData.MEDICOS.filter { it.id == SessionState.loggedPersonId }
+        } else {
+            AppData.MEDICOS
+        }
+
         val filtroNormalizado = normalizarTexto(filtro)
 
         val medicosFiltrados = if (filtroNormalizado.isBlank()) {
-            AppData.MEDICOS
+            medicosBase
         } else {
-            AppData.MEDICOS.filter {
+            medicosBase.filter {
                 normalizarTexto(it.fullName).contains(filtroNormalizado)
             }
         }
@@ -137,6 +146,15 @@ class GestionTurnosActivity : AppCompatActivity() {
         val adapterPaciente = ArrayAdapter(this, android.R.layout.simple_spinner_item, listaPacientesStr)
         adapterPaciente.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerPaciente.adapter = adapterPaciente
+
+        // Si el usuario logueado es Paciente, solo puede sacar turno para sí mismo
+        if (SessionState.rol == Rol.PACIENTE && SessionState.loggedPersonId != null) {
+            val indexPaciente = AppData.PACIENTES.indexOfFirst { it.id == SessionState.loggedPersonId }
+            if (indexPaciente >= 0) {
+                spinnerPaciente.setSelection(indexPaciente)
+                spinnerPaciente.isEnabled = false
+            }
+        }
 
         val etFecha = dialogView.findViewById<EditText>(R.id.et_fecha_turno)
         val spinnerHorario = dialogView.findViewById<Spinner>(R.id.spinner_horario_disponible)

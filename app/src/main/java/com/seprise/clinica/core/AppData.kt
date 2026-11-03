@@ -19,7 +19,10 @@ object AppData {
         Paciente(id = 1, nombre = "Ana", apellido = "López", dni = "35123456", mail = "ana@mail.com", telefono = "1144445555", direccion = "Av. Mayo 123"),
         Paciente(id = 2, nombre = "Roberto", apellido = "Fernández", dni = "28987654", mail = "roberto@mail.com", telefono = "1155556666", direccion = "Belgrano 456")
     )
-    val ADMINISTRADORES = mutableListOf<Administrador>()
+    val ADMINISTRADORES = mutableListOf<Administrador>(
+        Administrador(id = 1, nombre = "Laura", apellido = "Ríos", dni= "22333111"),
+        Administrador(id = 2, nombre = "Camila", apellido = "Gómez", dni = "11222333"),
+   )
     val MEDICOS = mutableListOf<Medico>(
         Medico(id = 1, nombre = "Carlos", apellido = "Pérez", especialidad = Especialidad.CARDIOLOGIA),
         Medico(id = 2, nombre = "María", apellido = "Gómez", especialidad = Especialidad.ORTOPEDIA),
