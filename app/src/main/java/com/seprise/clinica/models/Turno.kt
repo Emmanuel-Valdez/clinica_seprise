@@ -13,6 +13,7 @@ enum class EstadoTurno {
 data class Turno(
     val id: Int = 0,
     val pacienteId: Int,
+    val medicoId: Int,
     val agendaId: Int,
     val fecha: LocalDate,
     val hora: LocalTime,

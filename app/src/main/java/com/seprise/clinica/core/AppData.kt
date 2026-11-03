@@ -15,7 +15,10 @@ import com.seprise.clinica.models.Turno
  * por consenso (cambiar `mutableListOf<Any>()` por el tipo real cuando exista).
  */
 object AppData {
-    val PACIENTES = mutableListOf<Paciente>()
+    val PACIENTES = mutableListOf<Paciente>(
+        Paciente(id = 1, nombre = "Ana", apellido = "López", dni = "35123456", mail = "ana@mail.com", telefono = "1144445555", direccion = "Av. Mayo 123"),
+        Paciente(id = 2, nombre = "Roberto", apellido = "Fernández", dni = "28987654", mail = "roberto@mail.com", telefono = "1155556666", direccion = "Belgrano 456")
+    )
     val ADMINISTRADORES = mutableListOf<Administrador>()
     val MEDICOS = mutableListOf<Medico>(
         Medico(id = 1, nombre = "Carlos", apellido = "Pérez", especialidad = Especialidad.CARDIOLOGIA),
