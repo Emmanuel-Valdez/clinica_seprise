@@ -20,7 +20,8 @@ object AppData {
     val MEDICOS = mutableListOf<Medico>(
         Medico(id = 1, nombre = "Carlos", apellido = "Pérez", especialidad = Especialidad.CARDIOLOGIA),
         Medico(id = 2, nombre = "María", apellido = "Gómez", especialidad = Especialidad.ORTOPEDIA),
-        Medico(id = 3, nombre = "Juan", apellido = "Rodríguez", especialidad = Especialidad.PEDIATRIA)
+        Medico(id = 3, nombre = "Juan", apellido = "Rodríguez", especialidad = Especialidad.PEDIATRIA),
+        Medico(id = 4, nombre = "Lucia", apellido = "Dergo", especialidad = Especialidad.ORTOPEDIA)
     )
     val TURNOS = mutableListOf<Turno>()
     val AGENDAS = mutableListOf<Agenda>()

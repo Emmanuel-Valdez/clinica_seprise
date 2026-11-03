@@ -1,6 +1,8 @@
 package com.seprise.clinica.agenda
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ArrayAdapter
@@ -25,6 +27,7 @@ import com.seprise.clinica.models.Circuito
 import com.seprise.clinica.models.Medico
 import com.seprise.clinica.models.Modalidad
 import com.seprise.clinica.models.Servicio
+import java.text.Normalizer
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeParseException
@@ -32,6 +35,7 @@ import java.time.format.DateTimeParseException
 class GestionAgendaActivity : AppCompatActivity() {
 
     private lateinit var containerMedicos: LinearLayout
+    private lateinit var etBuscarMedico: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,15 +50,45 @@ class GestionAgendaActivity : AppCompatActivity() {
         }
 
         containerMedicos = findViewById(R.id.container_medicos)
+        etBuscarMedico = findViewById(R.id.et_buscar_medico)
+
+        etBuscarMedico.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                cargarListaMedicos(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         cargarListaMedicos()
     }
 
-    /** Renderiza la lista de médicos consumiendo directamente de AppData.MEDICOS. */
-    private fun cargarListaMedicos() {
+    /** Renderiza la lista de médicos consumiendo de AppData.MEDICOS con filtro opcional ignorando mayúsculas y tildes. */
+    private fun cargarListaMedicos(filtro: String = "") {
         containerMedicos.removeAllViews()
 
-        for (medico in AppData.MEDICOS) {
+        val filtroNormalizado = normalizarTexto(filtro)
+
+        val medicosFiltrados = if (filtroNormalizado.isBlank()) {
+            AppData.MEDICOS
+        } else {
+            AppData.MEDICOS.filter {
+                normalizarTexto(it.fullName).contains(filtroNormalizado)
+            }
+        }
+
+        if (medicosFiltrados.isEmpty()) {
+            val tvVacio = TextView(this).apply {
+                text = "No se encontraron médicos"
+                textSize = 14f
+                setTextColor(ContextCompat.getColor(this@GestionAgendaActivity, R.color.seprise_muted))
+                setPadding(0, 24, 0, 0)
+            }
+            containerMedicos.addView(tvVacio)
+            return
+        }
+
+        for (medico in medicosFiltrados) {
             val item = LayoutInflater.from(this).inflate(R.layout.item_medico_agenda, containerMedicos, false)
 
             val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_medico)
@@ -176,7 +210,7 @@ class GestionAgendaActivity : AppCompatActivity() {
             if (creada) {
                 Toast.makeText(this, "Agenda guardada con éxito para Dr/a. ${medico.apellido}", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
-                cargarListaMedicos()
+                cargarListaMedicos(etBuscarMedico.text.toString())
             } else {
                 Toast.makeText(this, "Error: El médico ya tiene una agenda cargada", Toast.LENGTH_LONG).show()
             }
@@ -205,9 +239,14 @@ class GestionAgendaActivity : AppCompatActivity() {
             .setNeutralButton("Eliminar Agenda") { _, _ ->
                 AgendaManager.eliminarAgenda(agenda.id)
                 Toast.makeText(this, "Agenda eliminada", Toast.LENGTH_SHORT).show()
-                cargarListaMedicos()
+                cargarListaMedicos(etBuscarMedico.text.toString())
             }
             .show()
+    }
+
+    private fun normalizarTexto(texto: String): String {
+        val normalizado = Normalizer.normalize(texto, Normalizer.Form.NFD)
+        return Regex("\\p{InCombiningDiacriticalMarks}+").replace(normalizado, "").lowercase()
     }
 
     private fun parsearHora(texto: String, porDefecto: LocalTime): LocalTime {
