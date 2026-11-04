@@ -18,11 +18,6 @@ object SessionState {
 
     data class Credencial(val usuario: String, val password: String, val rol: Rol)
 
-    val credenciales = listOf(
-        Credencial("admin", "admin123", Rol.ADMINISTRATIVO),
-        Credencial("paciente", "paciente123", Rol.PACIENTE),
-    )
-
     /** Valida usuario + contraseña + rol contra AppData según el rol y almacena el ID de la persona. */
     fun login(usuario: String, password: String, rol: Rol): Boolean {
         if (password.isEmpty() || usuario.trim().isEmpty()) {

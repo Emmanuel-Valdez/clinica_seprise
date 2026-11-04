@@ -20,17 +20,41 @@
         android:id="@+id/tv_subtitulo_gestion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Seleccione un médico para sacar turno."
+        android:text="Seleccione un circuito para solicitar su turno."
         android:textSize="14sp"
         android:textColor="@color/seprise_muted"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="12dp" />
 
+    <!-- RadioGroup Circuito -->
+    <RadioGroup
+        android:id="@+id/rg_circuito_turnos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <RadioButton
+            android:id="@+id/rb_turnos_consultorios"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Consultorio Externo"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/rb_turnos_estudios"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Estudios Clínicos" />
+    </RadioGroup>
+
     <EditText
         android:id="@+id/et_buscar_medico"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:hint="Buscar médico por nombre o apellido"
+        android:hint="Buscar por nombre o servicio..."
         android:textColorHint="@color/seprise_placeholder"
         android:textColor="@color/seprise_ink"
         android:paddingHorizontal="14dp"
@@ -47,8 +71,6 @@
             android:id="@+id/container_medicos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
-
-        </LinearLayout>
+            android:orientation="vertical" />
     </ScrollView>
 </LinearLayout>

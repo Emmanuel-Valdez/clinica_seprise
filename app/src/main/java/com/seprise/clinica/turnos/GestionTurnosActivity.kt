@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -24,6 +25,7 @@ import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
 import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Agenda
+import com.seprise.clinica.models.Circuito
 import com.seprise.clinica.models.EstadoTurno
 import com.seprise.clinica.models.Medico
 import com.seprise.clinica.models.Turno
@@ -36,6 +38,7 @@ class GestionTurnosActivity : AppCompatActivity() {
 
     private lateinit var containerMedicos: LinearLayout
     private lateinit var etBuscarMedico: EditText
+    private lateinit var rgCircuitoTurnos: RadioGroup
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,47 +54,55 @@ class GestionTurnosActivity : AppCompatActivity() {
 
         containerMedicos = findViewById(R.id.container_medicos)
         etBuscarMedico = findViewById(R.id.et_buscar_medico)
+        rgCircuitoTurnos = findViewById(R.id.rg_circuito_turnos)
+
+        rgCircuitoTurnos.setOnCheckedChangeListener { _, _ ->
+            cargarLista(etBuscarMedico.text.toString())
+        }
 
         etBuscarMedico.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                cargarListaMedicos(s?.toString() ?: "")
+                cargarLista(s?.toString() ?: "")
             }
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        cargarListaMedicos()
+        cargarLista()
     }
 
-    /** Renderiza la lista de médicos para la gestión de turnos consumiendo AppData.MEDICOS. */
-    private fun cargarListaMedicos(filtro: String = "") {
+    /** Carga la lista según el circuito seleccionado (Consultorios Externos o Estudios Clínicos). */
+    private fun cargarLista(filtro: String = "") {
         containerMedicos.removeAllViews()
 
-        // Si es médico, solo ve su propia tarjeta/agenda
+        val esEstudios = rgCircuitoTurnos.checkedRadioButtonId == R.id.rb_turnos_estudios
+
+        if (esEstudios) {
+            cargarEstudiosClinicos(filtro)
+        } else {
+            cargarMedicosConsultorio(filtro)
+        }
+    }
+
+    /** Renderiza la lista de médicos de Consultorio Externo con su especialidad tomada del objeto Médico. */
+    private fun cargarMedicosConsultorio(filtro: String) {
         val medicosBase = if (SessionState.rol == Rol.MEDICO && SessionState.loggedPersonId != null) {
             AppData.MEDICOS.filter { it.id == SessionState.loggedPersonId }
         } else {
             AppData.MEDICOS
         }
 
-        val filtroNormalizado = normalizarTexto(filtro)
-
-        val medicosFiltrados = if (filtroNormalizado.isBlank()) {
+        val filtroNorm = normalizarTexto(filtro)
+        val medicosFiltrados = if (filtroNorm.isBlank()) {
             medicosBase
         } else {
             medicosBase.filter {
-                normalizarTexto(it.fullName).contains(filtroNormalizado)
+                normalizarTexto(it.fullName).contains(filtroNorm) || normalizarTexto(it.especialidad.name).contains(filtroNorm)
             }
         }
 
         if (medicosFiltrados.isEmpty()) {
-            val tvVacio = TextView(this).apply {
-                text = "No se encontraron médicos"
-                textSize = 14f
-                setTextColor(ContextCompat.getColor(this@GestionTurnosActivity, R.color.seprise_muted))
-                setPadding(0, 24, 0, 0)
-            }
-            containerMedicos.addView(tvVacio)
+            mostrarMensajeVacio("No se encontraron médicos en consultorio externo")
             return
         }
 
@@ -109,14 +120,14 @@ class GestionTurnosActivity : AppCompatActivity() {
             val agendaExistente = TurnosManager.obtenerAgendaPorMedico(medico.id)
             val turnosReservados = TurnosManager.obtenerTurnosPorMedico(medico.id)
 
-            if (agendaExistente != null) {
+            if (agendaExistente != null && agendaExistente.circuito == Circuito.CONSULTORIOS_EXTERNOS) {
                 tvEstado.text = "Agenda disponible (${turnosReservados.size} turnos)"
                 tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_success))
                 btnAccion.text = "Sacar Turno"
                 btnAccion.isEnabled = true
-                btnAccion.setOnClickListener { abrirModalSacarTurno(medico, agendaExistente) }
+                btnAccion.setOnClickListener { abrirModalSacarTurnoMedico(medico, agendaExistente) }
 
-                item.setOnClickListener { mostrarTurnosDialog(medico, turnosReservados, agendaExistente) }
+                item.setOnClickListener { mostrarTurnosDialog(medico.fullName, turnosReservados) }
             } else {
                 tvEstado.text = "Sin agenda configurada"
                 tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_muted))
@@ -128,8 +139,79 @@ class GestionTurnosActivity : AppCompatActivity() {
         }
     }
 
-    /** Abre el modal con el formulario para reservar un nuevo turno mostrando los horarios disponibles del médico. */
-    private fun abrirModalSacarTurno(medico: Medico, agenda: Agenda) {
+    /** Renderiza la lista de Estudios Clínicos disponibles para reservar turno. */
+    private fun cargarEstudiosClinicos(filtro: String) {
+        val agendasEstudios = AppData.AGENDAS.filter { it.circuito == Circuito.ESTUDIOS_CLINICOS }
+        val filtroNorm = normalizarTexto(filtro)
+
+        val estudiosFiltrados = if (filtroNorm.isBlank()) {
+            agendasEstudios
+        } else {
+            agendasEstudios.filter { normalizarTexto(it.servicio.name).contains(filtroNorm) }
+        }
+
+        if (estudiosFiltrados.isEmpty()) {
+            mostrarMensajeVacio("No hay estudios clínicos configurados actualmente")
+            return
+        }
+
+        for (agenda in estudiosFiltrados) {
+            val item = LayoutInflater.from(this).inflate(R.layout.item_medico_agenda, containerMedicos, false)
+
+            val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_medico)
+            val tvEspecialidad = item.findViewById<TextView>(R.id.tv_especialidad_medico)
+            val tvEstado = item.findViewById<TextView>(R.id.tv_estado_agenda)
+            val btnAccion = item.findViewById<Button>(R.id.btn_accion_agenda)
+
+            val diasAtencionStr = agenda.diasSemana.joinToString(", ") { it.name }
+
+            tvNombre.text = "Estudio: ${agenda.servicio.name}"
+            tvEspecialidad.text = "Días: $diasAtencionStr (${agenda.horaInicio} - ${agenda.horaFin})"
+            tvEstado.text = if (agenda.requiereAyuno) "Requiere ayuno previo" else "Sin requerimiento de ayuno"
+            tvEstado.setTextColor(ContextCompat.getColor(this, if (agenda.requiereAyuno) R.color.seprise_warn else R.color.seprise_blue))
+
+            btnAccion.text = "Sacar Turno"
+            btnAccion.isEnabled = true
+            btnAccion.setOnClickListener { abrirModalSacarTurnoEstudio(agenda) }
+
+            containerMedicos.addView(item)
+        }
+    }
+
+    private fun mostrarMensajeVacio(mensaje: String) {
+        val tvVacio = TextView(this).apply {
+            text = mensaje
+            textSize = 14f
+            setTextColor(ContextCompat.getColor(this@GestionTurnosActivity, R.color.seprise_muted))
+            setPadding(0, 24, 0, 0)
+        }
+        containerMedicos.addView(tvVacio)
+    }
+
+    /** Abre el modal para sacar turno con un Médico de Consultorio Externo. */
+    private fun abrirModalSacarTurnoMedico(medico: Medico, agenda: Agenda) {
+        val infoStr = "Médico: Dr/a. ${medico.fullName}\nEspecialidad: ${medico.especialidad.name}\nDías de atención: ${agenda.diasSemana.joinToString(", ") { it.name }}\nHorario: ${agenda.horaInicio} a ${agenda.horaFin}"
+        mostrarDialogoFormularioTurno(
+            titulo = "Sacar Turno - Consultorio",
+            infoText = infoStr,
+            medicoId = medico.id,
+            agenda = agenda
+        )
+    }
+
+    /** Abre el modal para sacar turno para un Estudio Clínico. */
+    private fun abrirModalSacarTurnoEstudio(agenda: Agenda) {
+        val infoStr = "Estudio Clínico: ${agenda.servicio.name}\nDías de atención: ${agenda.diasSemana.joinToString(", ") { it.name }}\nHorario: ${agenda.horaInicio} a ${agenda.horaFin}\nAyuno: ${if (agenda.requiereAyuno) "Sí" else "No"}"
+        mostrarDialogoFormularioTurno(
+            titulo = "Sacar Turno - Estudio Clínico",
+            infoText = infoStr,
+            medicoId = agenda.medicoId,
+            agenda = agenda
+        )
+    }
+
+    /** Modal unificado para reserva de turno (sin selector de especialidad, la especialidad se toma del médico o estudio). */
+    private fun mostrarDialogoFormularioTurno(titulo: String, infoText: String, medicoId: Int, agenda: Agenda) {
         if (AppData.PACIENTES.isEmpty()) {
             Toast.makeText(this, "No hay pacientes registrados en el sistema", Toast.LENGTH_LONG).show()
             return
@@ -137,9 +219,8 @@ class GestionTurnosActivity : AppCompatActivity() {
 
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_sacar_turno, null)
 
-        val diasAtencionStr = agenda.diasSemana.joinToString(", ") { it.name }
-        dialogView.findViewById<TextView>(R.id.tv_dialog_turno_info).text =
-            "Médico: Dr/a. ${medico.fullName}\nServicio: ${agenda.servicio.name}\nDías de atención: $diasAtencionStr\nHorario: ${agenda.horaInicio} a ${agenda.horaFin} (${agenda.duracionCita} min/cita)"
+        dialogView.findViewById<TextView>(R.id.tv_dialog_turno_titulo).text = titulo
+        dialogView.findViewById<TextView>(R.id.tv_dialog_turno_info).text = infoText
 
         val spinnerPaciente = dialogView.findViewById<Spinner>(R.id.spinner_paciente)
         val listaPacientesStr = AppData.PACIENTES.map { "ID ${it.id}: ${it.fullName} (DNI ${it.dni})" }
@@ -147,7 +228,7 @@ class GestionTurnosActivity : AppCompatActivity() {
         adapterPaciente.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerPaciente.adapter = adapterPaciente
 
-        // Si el usuario logueado es Paciente, solo puede sacar turno para sí mismo
+        // Si el usuario logueado es Paciente, se fija su selección
         if (SessionState.rol == Rol.PACIENTE && SessionState.loggedPersonId != null) {
             val indexPaciente = AppData.PACIENTES.indexOfFirst { it.id == SessionState.loggedPersonId }
             if (indexPaciente >= 0) {
@@ -172,7 +253,7 @@ class GestionTurnosActivity : AppCompatActivity() {
                 fechaInicial
             }
 
-            horariosDisponibles = generarHorariosDisponibles(medico.id, agenda, fechaIngresada).toMutableList()
+            horariosDisponibles = generarHorariosDisponibles(agenda, fechaIngresada).toMutableList()
             val horariosStr = if (horariosDisponibles.isEmpty()) {
                 listOf("Sin horarios libres en esta fecha")
             } else {
@@ -217,12 +298,12 @@ class GestionTurnosActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Validar que el día de la semana coincida con la agenda del médico
             val diaSemanaTurno = fechaTurno.dayOfWeek
             if (!agenda.diasSemana.contains(diaSemanaTurno) && !cbSobreturno.isChecked) {
+                val diasPermitidosStr = agenda.diasSemana.joinToString(", ") { it.name }
                 Toast.makeText(
                     this,
-                    "El médico no atiende los $diaSemanaTurno. Días permitidos: $diasAtencionStr (o marque sobreturno)",
+                    "No se atiende los $diaSemanaTurno. Días permitidos: $diasPermitidosStr (o marque sobreturno)",
                     Toast.LENGTH_LONG
                 ).show()
                 return@setOnClickListener
@@ -237,7 +318,7 @@ class GestionTurnosActivity : AppCompatActivity() {
             val nuevoTurno = Turno(
                 id = (AppData.TURNOS.maxOfOrNull { it.id } ?: 0) + 1,
                 pacienteId = pacienteSeleccionado.id,
-                medicoId = medico.id,
+                medicoId = medicoId,
                 agendaId = agenda.id,
                 fecha = fechaTurno,
                 hora = horaTurno,
@@ -250,7 +331,7 @@ class GestionTurnosActivity : AppCompatActivity() {
             if (creado) {
                 Toast.makeText(this, "Turno reservado con éxito para ${pacienteSeleccionado.fullName}", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
-                cargarListaMedicos(etBuscarMedico.text.toString())
+                cargarLista(etBuscarMedico.text.toString())
             } else {
                 Toast.makeText(this, "Error al crear el turno", Toast.LENGTH_SHORT).show()
             }
@@ -258,7 +339,7 @@ class GestionTurnosActivity : AppCompatActivity() {
     }
 
     /** Genera los horarios de citas disponibles excluyendo turnos ya reservados. */
-    private fun generarHorariosDisponibles(medicoId: Int, agenda: Agenda, fecha: LocalDate): List<LocalTime> {
+    private fun generarHorariosDisponibles(agenda: Agenda, fecha: LocalDate): List<LocalTime> {
         val slots = mutableListOf<LocalTime>()
         var actual = agenda.horaInicio
         val fin = agenda.horaFin
@@ -270,19 +351,18 @@ class GestionTurnosActivity : AppCompatActivity() {
         }
 
         val ocupados = AppData.TURNOS.filter {
-            it.medicoId == medicoId && it.fecha == fecha && it.estado == EstadoTurno.RESERVADO && !it.esSobreturno
+            it.agendaId == agenda.id && it.fecha == fecha && it.estado == EstadoTurno.RESERVADO && !it.esSobreturno
         }.map { it.hora }
 
         return slots.filter { it !in ocupados }
     }
 
-    /** Muestra la lista de turnos reservados para un médico. */
-    private fun mostrarTurnosDialog(medico: Medico, turnos: List<Turno>, agenda: Agenda) {
+    /** Muestra la lista de turnos reservados. */
+    private fun mostrarTurnosDialog(nombreHeader: String, turnos: List<Turno>) {
         if (turnos.isEmpty()) {
             AlertDialog.Builder(this)
-                .setTitle("Turnos de Dr/a. ${medico.fullName}")
-                .setMessage("No hay turnos registrados para este médico.")
-                .setPositiveButton("Sacar Turno") { _, _ -> abrirModalSacarTurno(medico, agenda) }
+                .setTitle("Turnos de $nombreHeader")
+                .setMessage("No hay turnos registrados.")
                 .setNegativeButton("Cerrar", null)
                 .show()
             return
@@ -295,9 +375,8 @@ class GestionTurnosActivity : AppCompatActivity() {
         }
 
         AlertDialog.Builder(this)
-            .setTitle("Turnos de Dr/a. ${medico.fullName}")
+            .setTitle("Turnos de $nombreHeader")
             .setMessage(detalleTurnos)
-            .setPositiveButton("Sacar Nuevo Turno") { _, _ -> abrirModalSacarTurno(medico, agenda) }
             .setNegativeButton("Cerrar", null)
             .show()
     }
