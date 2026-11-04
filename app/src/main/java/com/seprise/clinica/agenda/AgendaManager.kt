@@ -3,6 +3,7 @@ package com.seprise.clinica.agenda
 
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.models.Agenda
+import com.seprise.clinica.models.EstadoTurno
 
 object AgendaManager {
 
@@ -27,6 +28,23 @@ object AgendaManager {
 
         AppData.AGENDAS[indice] = agenda
         return true
+    }
+
+    /** Modifica la agenda y pasa a CANCELADO todos los turnos reservados previamente. */
+    fun modificarAgendaYCancelarTurnos(agendaActualizada: Agenda): Int {
+        val indice = AppData.AGENDAS.indexOfFirst { it.id == agendaActualizada.id }
+        if (indice == -1) return -1
+
+        AppData.AGENDAS[indice] = agendaActualizada
+
+        var canceladosCount = 0
+        AppData.TURNOS.forEachIndexed { index, turno ->
+            if (turno.agendaId == agendaActualizada.id && turno.estado == EstadoTurno.RESERVADO) {
+                AppData.TURNOS[index] = turno.copy(estado = EstadoTurno.CANCELADO)
+                canceladosCount++
+            }
+        }
+        return canceladosCount
     }
 
     fun eliminarAgenda(id: Int): Boolean {

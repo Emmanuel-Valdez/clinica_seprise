@@ -31,10 +31,10 @@ class MainNavActivity : AppCompatActivity() {
 
     private val pacientes = Modulo("pacientes", R.string.cu01_nav_pacientes, "com.seprise.clinica.pacientes.PacientesActivity")
     private val agenda = Modulo("agenda", R.string.cu01_nav_agenda, "com.seprise.clinica.agenda.GestionAgendaActivity")
-    private val turnos = Modulo("turnos", R.string.cu01_nav_turnos, "com.seprise.clinica.turnos.TurnosActivity")
+    private val turnos = Modulo("turnos", R.string.cu01_nav_turnos, "com.seprise.clinica.turnos.GestionTurnosActivity")
     private val atencion = Modulo("atencion", R.string.cu01_nav_atencion, "com.seprise.clinica.atencion.AtencionActivity")
     private val estudios = Modulo("estudios", R.string.cu01_nav_estudios, "com.seprise.clinica.estudios.EstudiosActivity")
-    private val insumos = Modulo("insumos", R.string.cu01_nav_insumos, "com.seprise.clinica.insumos.InsumosActivity")
+    private val insumos = Modulo("insumos", R.string.cu01_nav_insumos, "com.seprise.clinica.insumos.GestionInsumosActivity")
     private val honorarios = Modulo("honorarios", R.string.cu01_nav_honorarios, "com.seprise.clinica.honorarios.HonorariosActivity")
 
     private lateinit var contenedorItems: LinearLayout
@@ -78,10 +78,10 @@ class MainNavActivity : AppCompatActivity() {
         armarItems(modulosDe(rol))
     }
 
-    /** Regla de acceso por rol (ver Scenario "Ítems del ..."). */
+    /** Regla de acceso por rol: agenda solo para Administrativos y Médicos; turnos solo para Pacientes. */
     private fun modulosDe(rol: Rol): List<Modulo> = when (rol) {
-        Rol.ADMINISTRATIVO -> listOf(pacientes, agenda, turnos, estudios, insumos, honorarios)
-        Rol.MEDICO -> listOf(atencion, turnos, estudios)
+        Rol.ADMINISTRATIVO -> listOf(pacientes, agenda, estudios, insumos, honorarios)
+        Rol.MEDICO -> listOf(atencion, agenda, estudios)
         Rol.PACIENTE -> listOf(turnos, estudios)
     }
 

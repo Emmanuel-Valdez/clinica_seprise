@@ -1,6 +1,6 @@
 package com.seprise.clinica.models
 
-data class Administrador(
+data class `Administrador`(
     val id: Int = 0,
     val nombre: String,
     val apellido: String,

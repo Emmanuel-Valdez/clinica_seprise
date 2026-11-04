@@ -1,5 +1,7 @@
 package com.seprise.clinica.core
 
+import java.text.Normalizer
+
 /** Rol del usuario logueado. */
 enum class Rol { ADMINISTRATIVO, MEDICO, PACIENTE }
 
@@ -12,29 +14,69 @@ enum class Rol { ADMINISTRATIVO, MEDICO, PACIENTE }
 object SessionState {
     var rol: Rol? = null
     var userId: String? = null
+    var loggedPersonId: Int? = null
 
     data class Credencial(val usuario: String, val password: String, val rol: Rol)
 
-    // Usuarios mock hardcodeados (uno por rol); reemplazar por AppData
-    // cuando CU02/backend traigan altas de usuarios reales. Credenciales en memoria, sin hashing.
-    val credenciales = listOf(
-        Credencial("admin", "admin123", Rol.ADMINISTRATIVO),
-        Credencial("medico", "medico123", Rol.MEDICO),
-        Credencial("paciente", "paciente123", Rol.PACIENTE),
-    )
-
-    /** Valida usuario + contraseña + rol contra las credenciales mock. */
+    /** Valida usuario + contraseña + rol contra AppData según el rol y almacena el ID de la persona. */
     fun login(usuario: String, password: String, rol: Rol): Boolean {
-        val ok = credenciales.any { it.usuario == usuario && it.password == password && it.rol == rol }
-        if (ok) {
-            this.rol = rol
-            this.userId = usuario
+        if (password.isEmpty() || usuario.trim().isEmpty()) {
+            return false
         }
-        return ok
+
+        val uNormal = normalizarTexto(usuario.trim())
+        var personIdEncontrado: Int? = null
+
+        val valido = when (rol) {
+            Rol.ADMINISTRATIVO -> {
+                val admin = AppData.ADMINISTRADORES.find { generarUsername(it.nombre, it.apellido) == uNormal }
+                if (admin != null) {
+                    personIdEncontrado = admin.id
+                    true
+                } else uNormal == "admin"
+            }
+            Rol.MEDICO -> {
+                val medico = AppData.MEDICOS.find { generarUsername(it.nombre, it.apellido) == uNormal }
+                if (medico != null) {
+                    personIdEncontrado = medico.id
+                    true
+                } else uNormal == "medico"
+            }
+            Rol.PACIENTE -> {
+                val paciente = AppData.PACIENTES.find { generarUsername(it.nombre, it.apellido) == uNormal }
+                if (paciente != null) {
+                    personIdEncontrado = paciente.id
+                    true
+                } else uNormal == "paciente"
+            }
+        }
+
+        if (valido) {
+            this.rol = rol
+            this.userId = uNormal
+            this.loggedPersonId = personIdEncontrado ?: 1
+            return true
+        }
+
+        return false
+    }
+
+    /** Genera el nombre de usuario de una persona (2 primeras letras del nombre + apellido en minúsculas y sin tildes). */
+    fun generarUsername(nombre: String, apellido: String): String {
+        val nom = normalizarTexto(nombre)
+        val dosLetras = if (nom.length >= 2) nom.substring(0, 2) else nom
+        val ape = normalizarTexto(apellido)
+        return (dosLetras + ape).replace(" ", "")
+    }
+
+    private fun normalizarTexto(texto: String): String {
+        val temp = Normalizer.normalize(texto, Normalizer.Form.NFD)
+        return Regex("\\p{InCombiningDiacriticalMarks}+").replace(temp, "").lowercase()
     }
 
     fun logout() {
         rol = null
         userId = null
+        loggedPersonId = null
     }
 }
