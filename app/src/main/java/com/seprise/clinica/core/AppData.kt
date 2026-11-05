@@ -33,35 +33,10 @@ object AppData {
     val MEDICOS = mutableListOf<Medico>(
         Medico(id = 1, nombre = "Carlos", apellido = "Pérez", especialidad = Especialidad.CARDIOLOGIA),
         Medico(id = 2, nombre = "María", apellido = "Gómez", especialidad = Especialidad.ORTOPEDIA),
-        Medico(id = 3, nombre = "Juan", apellido = "Rodríguez", especialidad = Especialidad.PEDIATRIA),
-        Medico(id = 4, nombre = "Lucia", apellido = "Dergo", especialidad = Especialidad.ORTOPEDIA)
+        Medico(id = 3, nombre = "Juan", apellido = "Rodríguez", especialidad = Especialidad.PEDIATRIA)
     )
     val TURNOS = mutableListOf<Turno>()
     val AGENDAS = mutableListOf<Agenda>(
-        Agenda(
-            id = 1,
-            circuito = Circuito.CONSULTORIOS_EXTERNOS,
-            servicio = Servicio.CARDIOLOGIA,
-            medicoId = 1,
-            diasSemana = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
-            horaInicio = LocalTime.of(8, 0),
-            horaFin = LocalTime.of(12, 0),
-            duracionCita = 20,
-            requiereAyuno = false,
-            modalidad = Modalidad.CON_TURNO
-        ),
-        Agenda(
-            id = 2,
-            circuito = Circuito.CONSULTORIOS_EXTERNOS,
-            servicio = Servicio.ORTOPEDIA,
-            medicoId = 2,
-            diasSemana = listOf(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY),
-            horaInicio = LocalTime.of(9, 0),
-            horaFin = LocalTime.of(13, 0),
-            duracionCita = 30,
-            requiereAyuno = false,
-            modalidad = Modalidad.CON_TURNO
-        ),
         Agenda(
             id = 3,
             circuito = Circuito.ESTUDIOS_CLINICOS,
