@@ -26,79 +26,100 @@
             android:textColor="@color/seprise_muted"
             android:layout_marginBottom="16dp" />
 
-        <!-- Servicio -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Servicio:"
-            android:textStyle="bold"
-            android:textColor="@color/seprise_ink" />
-
-        <Spinner
-            android:id="@+id/spinner_servicio"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="12dp" />
-
-        <!-- Circuito -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Circuito:"
-            android:textStyle="bold"
-            android:textColor="@color/seprise_ink" />
-
-        <RadioGroup
-            android:id="@+id/rg_circuito"
+        <!-- Servicio (Opcional según flujo) -->
+        <LinearLayout
+            android:id="@+id/layout_servicio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
+            android:orientation="vertical">
 
-            <RadioButton
-                android:id="@+id/rb_consultorios"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Consultorios"
-                android:checked="true" />
+                android:text="Servicio / Estudio:"
+                android:textStyle="bold"
+                android:textColor="@color/seprise_ink" />
 
-            <RadioButton
-                android:id="@+id/rb_estudios"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Estudios"
-                android:layout_marginStart="12dp" />
-        </RadioGroup>
+            <Spinner
+                android:id="@+id/spinner_servicio"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="12dp" />
+        </LinearLayout>
 
-        <!-- Modalidad -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Modalidad:"
-            android:textStyle="bold"
-            android:textColor="@color/seprise_ink" />
-
-        <RadioGroup
-            android:id="@+id/rg_modalidad"
+        <!-- Circuito (Opcional según flujo) -->
+        <LinearLayout
+            android:id="@+id/layout_circuito"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
+            android:orientation="vertical">
 
-            <RadioButton
-                android:id="@+id/rb_con_turno"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Con Turno"
-                android:checked="true" />
+                android:text="Circuito:"
+                android:textStyle="bold"
+                android:textColor="@color/seprise_ink" />
 
-            <RadioButton
-                android:id="@+id/rb_orden_llegada"
+            <RadioGroup
+                android:id="@+id/rg_circuito"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <RadioButton
+                    android:id="@+id/rb_consultorios"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Consultorios"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/rb_estudios"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Estudios"
+                    android:layout_marginStart="12dp" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <!-- Modalidad (Opcional según flujo) -->
+        <LinearLayout
+            android:id="@+id/layout_modalidad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Orden Llegada"
-                android:layout_marginStart="12dp" />
-        </RadioGroup>
+                android:text="Modalidad:"
+                android:textStyle="bold"
+                android:textColor="@color/seprise_ink" />
+
+            <RadioGroup
+                android:id="@+id/rg_modalidad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <RadioButton
+                    android:id="@+id/rb_con_turno"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Con Turno"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/rb_orden_llegada"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Orden Llegada"
+                    android:layout_marginStart="12dp" />
+            </RadioGroup>
+        </LinearLayout>
 
         <!-- Días de Atención -->
         <TextView

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_dialog_estudio_titulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_blue"
+            android:text="Cargar Estudio Clínico"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Seleccionar Paciente -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Paciente:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <Spinner
+            android:id="@+id/spinner_paciente_estudio"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Seleccionar Estudio / Servicio -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Estudio / Servicio:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <Spinner
+            android:id="@+id/spinner_tipo_estudio"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Fecha -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fecha (AAAA-MM-DD):"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_fecha_estudio"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Ej: 2025-06-15"
+            android:inputType="date"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Hora -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hora (HH:MM):"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_hora_estudio"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Ej: 10:00"
+            android:inputType="time"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Observaciones / Informe -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Observaciones / Informe:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_observaciones_estudio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="2"
+            android:hint="Observaciones o indicaciones adicionales..."
+            android:inputType="textMultiLine"
+            android:layout_marginBottom="12dp" />
+
+    </LinearLayout>
+</ScrollView>
