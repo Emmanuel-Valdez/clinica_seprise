@@ -44,6 +44,10 @@
             android:name=".insumos.GestionInsumosActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".estudios.GestionEstudiosActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

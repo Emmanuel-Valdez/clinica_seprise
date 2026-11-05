@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/seprise_bg"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tv_titulo_estudios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Gestión de Estudios"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@color/seprise_ink" />
+
+    <TextView
+        android:id="@+id/tv_subtitulo_estudios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Consultar y registrar estudios clínicos de pacientes."
+        android:textSize="14sp"
+        android:textColor="@color/seprise_muted"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Botón Cargar Estudio (solo visible para Administrativo) -->
+    <Button
+        android:id="@+id/btn_cargar_estudio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="+ Cargar Nuevo Estudio"
+        android:textSize="14sp"
+        android:layout_marginBottom="12dp" />
+
+    <EditText
+        android:id="@+id/et_buscar_estudio"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Buscar estudio o paciente..."
+        android:textColorHint="@color/seprise_placeholder"
+        android:textColor="@color/seprise_ink"
+        android:paddingHorizontal="14dp"
+        android:background="@drawable/bg_nav_active"
+        android:drawablePadding="8dp"
+        android:inputType="text"
+        android:layout_marginBottom="16dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/container_estudios"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+</LinearLayout>

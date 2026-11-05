@@ -3,14 +3,14 @@ package com.seprise.clinica.models
 import java.time.LocalDate
 import java.time.LocalTime
 
-
-data class `Estudio`(
+data class Estudio(
     val id: Int = 0,
     val nombre: String,
     val pacienteId: Int,
-    val agendaId: Int,
-    val fecha: LocalDate,
-    val hora: LocalTime,
-    val duracion: Int,
-    val insumos: List<Insumo>
+    val agendaId: Int = 0,
+    val fecha: LocalDate = LocalDate.now(),
+    val hora: LocalTime = LocalTime.now(),
+    val duracion: Int = 15,
+    val insumos: List<Insumo> = emptyList(),
+    val observaciones: String = ""
 )
