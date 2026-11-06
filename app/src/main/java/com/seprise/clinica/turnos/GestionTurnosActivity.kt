@@ -443,7 +443,7 @@ class GestionTurnosActivity : AppCompatActivity() {
             .setTitle("Cancelar turno")
             .setMessage("¿Cancelar el turno de ${paciente?.fullName ?: "Paciente ${turno.pacienteId}"} el ${turno.fecha} a las ${turno.hora}?")
             .setPositiveButton("Sí, cancelar") { _, _ ->
-                if (TurnosManager.modificarTurno(turno.copy(estado = EstadoTurno.CANCELADO))) {
+                if (TurnosManager.cancelarTurno(turno.id)) {
                     Toast.makeText(this, "Turno cancelado", Toast.LENGTH_SHORT).show()
                     cargarLista(etBuscarMedico.text.toString())
                 }

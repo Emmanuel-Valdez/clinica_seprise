@@ -3,7 +3,17 @@ package com.seprise.clinica.models
 enum class Especialidad {
     CARDIOLOGIA,
     ORTOPEDIA,
-    PEDIATRIA
+    PEDIATRIA,
+    FISIOTERAPIA,
+    KINESIOLOGIA,
+    SALUD_MENTAL
+}
+
+/** Duración de turno sugerida según especialidad: 15 general, 25 fisio/kinesio, 30 salud mental. */
+fun Especialidad.duracionSugerida(): Int = when (this) {
+    Especialidad.FISIOTERAPIA, Especialidad.KINESIOLOGIA -> 25
+    Especialidad.SALUD_MENTAL -> 30
+    else -> 15
 }
 
 data class Medico(

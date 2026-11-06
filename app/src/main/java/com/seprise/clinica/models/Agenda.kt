@@ -18,6 +18,9 @@ enum class Servicio {
     ORTOPEDIA,
     PEDIATRIA,
     CLINICA_MEDICA,
+    FISIOTERAPIA,
+    KINESIOLOGIA,
+    SALUD_MENTAL,
 
     // Estudios clínicos (a agregar)
     ECOGRAFIA,

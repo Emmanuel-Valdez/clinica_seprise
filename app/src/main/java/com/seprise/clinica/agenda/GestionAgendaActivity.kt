@@ -31,6 +31,7 @@ import com.seprise.clinica.models.EstadoTurno
 import com.seprise.clinica.models.Medico
 import com.seprise.clinica.models.Modalidad
 import com.seprise.clinica.models.Servicio
+import com.seprise.clinica.models.duracionSugerida
 import java.text.Normalizer
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -227,8 +228,7 @@ class GestionAgendaActivity : AppCompatActivity() {
 
         configurarHoraPicker(etHoraInicio, LocalTime.of(8, 0))
         configurarHoraPicker(etHoraFin, LocalTime.of(16, 0))
-        // ponytail: el modelo solo tiene especialidades médicas; 15 min para todas hasta que exista fisio/salud mental.
-        etDuracionCita.setText("15")
+        etDuracionCita.setText(medico.especialidad.duracionSugerida().toString())
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -255,7 +255,7 @@ class GestionAgendaActivity : AppCompatActivity() {
 
             val horaInicio = parsearHora(etHoraInicio.text.toString().trim(), LocalTime.of(8, 0))
             val horaFin = parsearHora(etHoraFin.text.toString().trim(), LocalTime.of(16, 0))
-            val duracionMins = etDuracionCita.text.toString().toIntOrNull() ?: 20
+            val duracionMins = etDuracionCita.text.toString().toIntOrNull() ?: medico.especialidad.duracionSugerida()
 
             val errorHorario = validarHorario(horaInicio, horaFin, duracionMins)
             if (errorHorario != null) {

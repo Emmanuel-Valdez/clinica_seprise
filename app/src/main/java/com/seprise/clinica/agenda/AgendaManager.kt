@@ -8,6 +8,7 @@ import com.seprise.clinica.models.EstadoTurno
 object AgendaManager {
 
     fun crearAgenda(agenda: Agenda): Boolean {
+        if (!esAgendaValida(agenda)) return false
         // Regla: Solo se permite cargar una agenda por médico
         if (AppData.AGENDAS.any { it.id == agenda.id || it.medicoId == agenda.medicoId }) {
             return false
@@ -18,6 +19,7 @@ object AgendaManager {
     }
 
     fun modificarAgenda(agenda: Agenda): Boolean {
+        if (!esAgendaValida(agenda)) return false
         val indice = AppData.AGENDAS.indexOfFirst {
             it.id == agenda.id
         }
@@ -32,6 +34,7 @@ object AgendaManager {
 
     /** Modifica la agenda y pasa a CANCELADO todos los turnos reservados previamente. */
     fun modificarAgendaYCancelarTurnos(agendaActualizada: Agenda): Int {
+        if (!esAgendaValida(agendaActualizada)) return -1
         val indice = AppData.AGENDAS.indexOfFirst { it.id == agendaActualizada.id }
         if (indice == -1) return -1
 
@@ -72,5 +75,8 @@ object AgendaManager {
     fun obtenerAgendaPorMedico(medicoId: Int): Agenda? {
         return AppData.AGENDAS.find { it.medicoId == medicoId }
     }
+
+    private fun esAgendaValida(agenda: Agenda): Boolean =
+        agenda.duracionCita > 0 && agenda.horaFin.isAfter(agenda.horaInicio)
 }
 

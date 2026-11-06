@@ -13,6 +13,15 @@ object TurnosManager {
         if (AppData.TURNOS.any { it.id == turno.id }) {
             return false
         }
+        val activosEnHorario = AppData.TURNOS.filter {
+            it.agendaId == turno.agendaId && it.fecha == turno.fecha &&
+                it.hora == turno.hora && it.estado != EstadoTurno.CANCELADO
+        }
+        if (turno.esSobreturno) {
+            if (activosEnHorario.any { it.esSobreturno }) return false
+        } else {
+            if (activosEnHorario.any { !it.esSobreturno }) return false
+        }
         AppData.TURNOS.add(turno)
         return true
     }
@@ -24,8 +33,13 @@ object TurnosManager {
         return true
     }
 
-    fun eliminarTurno(id: Int): Boolean {
-        return AppData.TURNOS.removeAll { it.id == id }
+    /** Cancela un turno RESERVADO conservando el registro y liberando su horario. */
+    fun cancelarTurno(id: Int): Boolean {
+        val indice = AppData.TURNOS.indexOfFirst { it.id == id }
+        if (indice == -1) return false
+        if (AppData.TURNOS[indice].estado != EstadoTurno.RESERVADO) return false
+        AppData.TURNOS[indice] = AppData.TURNOS[indice].copy(estado = EstadoTurno.CANCELADO)
+        return true
     }
 
     fun obtenerTurnos(): List<Turno> {
