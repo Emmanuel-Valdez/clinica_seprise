@@ -40,6 +40,8 @@ class GestionTurnosActivity : AppCompatActivity() {
     private lateinit var containerMedicos: LinearLayout
     private lateinit var etBuscarMedico: EditText
     private lateinit var rgCircuitoTurnos: RadioGroup
+    private lateinit var rgFiltroAdmin: RadioGroup
+    private lateinit var tvSubtitulo: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,9 +58,32 @@ class GestionTurnosActivity : AppCompatActivity() {
         containerMedicos = findViewById(R.id.container_medicos)
         etBuscarMedico = findViewById(R.id.et_buscar_medico)
         rgCircuitoTurnos = findViewById(R.id.rg_circuito_turnos)
+        rgFiltroAdmin = findViewById(R.id.rg_filtro_turnos_admin)
+        tvSubtitulo = findViewById(R.id.tv_subtitulo_gestion)
 
-        rgCircuitoTurnos.setOnCheckedChangeListener { _, _ ->
-            cargarLista(etBuscarMedico.text.toString())
+        if (SessionState.rol == Rol.ADMINISTRATIVO) {
+            rgFiltroAdmin.visibility = View.VISIBLE
+            rgCircuitoTurnos.visibility = View.GONE
+            tvSubtitulo.text = "Visualice y gestione los turnos por paciente o por médico."
+            etBuscarMedico.hint = "Buscar por nombre o DNI de paciente..."
+
+            rgFiltroAdmin.setOnCheckedChangeListener { _, checkedId ->
+                if (checkedId == R.id.rb_turnos_pacientes) {
+                    etBuscarMedico.hint = "Buscar por nombre o DNI de paciente..."
+                } else {
+                    etBuscarMedico.hint = "Buscar por nombre o especialidad de médico..."
+                }
+                cargarLista(etBuscarMedico.text.toString())
+            }
+        } else {
+            rgFiltroAdmin.visibility = View.GONE
+            rgCircuitoTurnos.visibility = View.VISIBLE
+            tvSubtitulo.text = "Seleccione un circuito para solicitar su turno."
+            etBuscarMedico.hint = "Buscar por nombre o servicio..."
+
+            rgCircuitoTurnos.setOnCheckedChangeListener { _, _ ->
+                cargarLista(etBuscarMedico.text.toString())
+            }
         }
 
         etBuscarMedico.addTextChangedListener(object : TextWatcher {
@@ -72,20 +97,125 @@ class GestionTurnosActivity : AppCompatActivity() {
         cargarLista()
     }
 
-    /** Carga la lista según el circuito seleccionado (Consultorios Externos o Estudios Clínicos). */
+    /** Carga la lista según el filtro activo. */
     private fun cargarLista(filtro: String = "") {
         containerMedicos.removeAllViews()
 
-        val esEstudios = rgCircuitoTurnos.checkedRadioButtonId == R.id.rb_turnos_estudios
-
-        if (esEstudios) {
-            cargarEstudiosClinicos(filtro)
+        if (SessionState.rol == Rol.ADMINISTRATIVO) {
+            val esPacientes = rgFiltroAdmin.checkedRadioButtonId == R.id.rb_turnos_pacientes
+            if (esPacientes) {
+                cargarTurnosPacientesAdmin(filtro)
+            } else {
+                cargarTurnosMedicosAdmin(filtro)
+            }
         } else {
-            cargarMedicosConsultorio(filtro)
+            val esEstudios = rgCircuitoTurnos.checkedRadioButtonId == R.id.rb_turnos_estudios
+            if (esEstudios) {
+                cargarEstudiosClinicos(filtro)
+            } else {
+                cargarMedicosConsultorio(filtro)
+            }
         }
     }
 
-    /** Renderiza la lista de médicos de Consultorio Externo con su especialidad tomada del objeto Médico. */
+    /** Renderiza la lista de pacientes con sus turnos asignados para el rol Administrativo. */
+    private fun cargarTurnosPacientesAdmin(filtro: String) {
+        val filtroNorm = normalizarTexto(filtro)
+        val pacientesBase = AppData.PACIENTES.filter { it.activo }
+
+        val pacientesFiltrados = if (filtroNorm.isBlank()) {
+            pacientesBase
+        } else {
+            pacientesBase.filter {
+                normalizarTexto(it.fullName).contains(filtroNorm) ||
+                normalizarTexto(it.dni).contains(filtroNorm)
+            }
+        }
+
+        if (pacientesFiltrados.isEmpty()) {
+            mostrarMensajeVacio("No se encontraron pacientes")
+            return
+        }
+
+        for (paciente in pacientesFiltrados) {
+            val item = LayoutInflater.from(this).inflate(R.layout.item_medico_agenda, containerMedicos, false)
+
+            val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_medico)
+            val tvEspecialidad = item.findViewById<TextView>(R.id.tv_especialidad_medico)
+            val tvEstado = item.findViewById<TextView>(R.id.tv_estado_agenda)
+            val btnAccion = item.findViewById<Button>(R.id.btn_accion_agenda)
+
+            tvNombre.text = paciente.fullName
+            tvEspecialidad.text = "DNI: ${paciente.dni} | Mail: ${paciente.mail}"
+
+            val turnosPaciente = AppData.TURNOS.filter { it.pacienteId == paciente.id }
+
+            if (turnosPaciente.isEmpty()) {
+                tvEstado.text = "Sin turnos asignados"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_muted))
+            } else {
+                tvEstado.text = "${turnosPaciente.size} turno(s) asignado(s)"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_blue))
+            }
+
+            btnAccion.text = "Ver Turnos"
+            btnAccion.setOnClickListener { mostrarTurnosDialog("Paciente ${paciente.fullName}", turnosPaciente) }
+            item.setOnClickListener { mostrarTurnosDialog("Paciente ${paciente.fullName}", turnosPaciente) }
+
+            containerMedicos.addView(item)
+        }
+    }
+
+    /** Renderiza la lista de médicos con sus turnos asignados para el rol Administrativo. */
+    private fun cargarTurnosMedicosAdmin(filtro: String) {
+        val filtroNorm = normalizarTexto(filtro)
+        val medicosBase = AppData.MEDICOS
+
+        val medicosFiltrados = if (filtroNorm.isBlank()) {
+            medicosBase
+        } else {
+            medicosBase.filter {
+                normalizarTexto(it.fullName).contains(filtroNorm) ||
+                normalizarTexto(it.especialidad.name).contains(filtroNorm) ||
+                normalizarTexto(nombreEspecialidad(it.especialidad.name)).contains(filtroNorm)
+            }
+        }
+
+        if (medicosFiltrados.isEmpty()) {
+            mostrarMensajeVacio("No se encontraron médicos")
+            return
+        }
+
+        for (medico in medicosFiltrados) {
+            val item = LayoutInflater.from(this).inflate(R.layout.item_medico_agenda, containerMedicos, false)
+
+            val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_medico)
+            val tvEspecialidad = item.findViewById<TextView>(R.id.tv_especialidad_medico)
+            val tvEstado = item.findViewById<TextView>(R.id.tv_estado_agenda)
+            val btnAccion = item.findViewById<Button>(R.id.btn_accion_agenda)
+
+            tvNombre.text = "Dr/a. ${medico.fullName}"
+            tvEspecialidad.text = "Especialidad: ${nombreEspecialidad(medico.especialidad.name)}"
+
+            val turnosMedico = AppData.TURNOS.filter { it.medicoId == medico.id }
+
+            if (turnosMedico.isEmpty()) {
+                tvEstado.text = "Sin turnos asignados"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_muted))
+            } else {
+                tvEstado.text = "${turnosMedico.size} turno(s) asignado(s)"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_blue))
+            }
+
+            btnAccion.text = "Ver Turnos"
+            btnAccion.setOnClickListener { mostrarTurnosDialog("Médico Dr/a. ${medico.fullName}", turnosMedico) }
+            item.setOnClickListener { mostrarTurnosDialog("Médico Dr/a. ${medico.fullName}", turnosMedico) }
+
+            containerMedicos.addView(item)
+        }
+    }
+
+    /** Renderiza la lista de médicos de Consultorio Externo. */
     private fun cargarMedicosConsultorio(filtro: String) {
         val medicosBase = if (SessionState.rol == Rol.MEDICO && SessionState.loggedPersonId != null) {
             AppData.MEDICOS.filter { it.id == SessionState.loggedPersonId }
@@ -116,7 +246,7 @@ class GestionTurnosActivity : AppCompatActivity() {
             val btnAccion = item.findViewById<Button>(R.id.btn_accion_agenda)
 
             tvNombre.text = "Dr/a. ${medico.fullName}"
-            tvEspecialidad.text = "Especialidad: ${medico.especialidad.name}"
+            tvEspecialidad.text = "Especialidad: ${nombreEspecialidad(medico.especialidad.name)}"
 
             val agendaExistente = TurnosManager.obtenerAgendaPorMedico(medico.id)
             val turnosReservados = filtrarTurnosPorRol(TurnosManager.obtenerTurnosPorMedico(medico.id))
@@ -194,7 +324,7 @@ class GestionTurnosActivity : AppCompatActivity() {
 
     /** Abre el modal para sacar turno con un Médico de Consultorio Externo. */
     private fun abrirModalSacarTurnoMedico(medico: Medico, agenda: Agenda) {
-        val infoStr = "Médico: Dr/a. ${medico.fullName}\nEspecialidad: ${medico.especialidad.name}\nDías de atención: ${agenda.diasSemana.joinToString(", ") { it.name }}\nHorario: ${agenda.horaInicio} a ${agenda.horaFin}"
+        val infoStr = "Médico: Dr/a. ${medico.fullName}\nEspecialidad: ${nombreEspecialidad(medico.especialidad.name)}\nDías de atención: ${agenda.diasSemana.joinToString(", ") { it.name }}\nHorario: ${agenda.horaInicio} a ${agenda.horaFin}"
         mostrarDialogoFormularioTurno(
             titulo = "Sacar Turno - Consultorio",
             infoText = infoStr,
@@ -214,7 +344,7 @@ class GestionTurnosActivity : AppCompatActivity() {
         )
     }
 
-    /** Modal unificado para reserva de turno (sin selector de especialidad, la especialidad se toma del médico o estudio). */
+    /** Modal unificado para reserva de turno. */
     private fun mostrarDialogoFormularioTurno(titulo: String, infoText: String, medicoId: Int, agenda: Agenda) {
         if (AppData.PACIENTES.isEmpty()) {
             Toast.makeText(this, "No hay pacientes registrados en el sistema", Toast.LENGTH_LONG).show()
@@ -232,7 +362,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         adapterPaciente.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerPaciente.adapter = adapterPaciente
 
-        // Si el usuario logueado es Paciente, se fija su selección
         if (SessionState.rol == Rol.PACIENTE && SessionState.loggedPersonId != null) {
             val indexPaciente = AppData.PACIENTES.indexOfFirst { it.id == SessionState.loggedPersonId }
             if (indexPaciente >= 0) {
@@ -368,7 +497,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         }
     }
 
-    /** Genera los horarios de citas; con [incluirOcupados] permite elegir la hora de un sobreturno. */
     private fun generarHorariosDisponibles(agenda: Agenda, fecha: LocalDate, incluirOcupados: Boolean = false): List<LocalTime> {
         val slots = mutableListOf<LocalTime>()
         var actual = agenda.horaInicio
@@ -402,8 +530,10 @@ class GestionTurnosActivity : AppCompatActivity() {
 
         val detalleTurnos = turnos.joinToString("\n\n") { turno ->
             val paciente = AppData.PACIENTES.find { it.id == turno.pacienteId }
+            val medico = AppData.MEDICOS.find { it.id == turno.medicoId }
             val pacienteNombre = paciente?.fullName ?: "Paciente ID ${turno.pacienteId}"
-            "• Fecha: ${turno.fecha} ${turno.hora}\n  Paciente: $pacienteNombre\n  Estado: ${turno.estado}\n  Sobreturno: ${if (turno.esSobreturno) "Sí" else "No"}"
+            val medicoNombre = medico?.fullName ?: "Médico ID ${turno.medicoId}"
+            "• Fecha: ${turno.fecha} ${turno.hora}\n  Paciente: $pacienteNombre\n  Médico: Dr/a. $medicoNombre\n  Estado: ${turno.estado}\n  Sobreturno: ${if (turno.esSobreturno) "Sí" else "No"}"
         }
 
         val reservados = turnos.filter { it.estado == EstadoTurno.RESERVADO }
@@ -462,5 +592,15 @@ class GestionTurnosActivity : AppCompatActivity() {
     private fun normalizarTexto(texto: String): String {
         val normalizado = Normalizer.normalize(texto, Normalizer.Form.NFD)
         return Regex("\\p{InCombiningDiacriticalMarks}+").replace(normalizado, "").lowercase()
+    }
+
+    private fun nombreEspecialidad(valor: String): String = when (valor) {
+        "CARDIOLOGIA" -> "Cardiología"
+        "ORTOPEDIA" -> "Ortopedia"
+        "PEDIATRIA" -> "Pediatría"
+        "FISIOTERAPIA" -> "Fisioterapia"
+        "KINESIOLOGIA" -> "Kinesiología"
+        "SALUD_MENTAL" -> "Salud mental"
+        else -> valor.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() }
     }
 }
