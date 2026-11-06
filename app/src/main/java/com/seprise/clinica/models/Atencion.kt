@@ -13,5 +13,7 @@ data class Atencion(
     val duracion: Int = 15,
     val insumos: List<Insumo> = emptyList(),
     val observaciones: String = "",
-    val valorConsulta: Double
+    val valorConsulta: Double,
+    val diagnostico: String = "",
+    val indicaciones: String = ""
 )

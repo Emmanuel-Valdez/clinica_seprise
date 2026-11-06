@@ -40,10 +40,35 @@
         android:layout_marginTop="2dp" />
 
     <TextView
-        android:id="@+id/tv_observaciones_atencion"
+        android:id="@+id/tv_diagnostico_atencion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="14sp"
+        android:textStyle="bold"
         android:textColor="@color/seprise_ink"
         android:layout_marginTop="6dp" />
+
+    <TextView
+        android:id="@+id/tv_indicaciones_atencion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textColor="@color/seprise_ink"
+        android:layout_marginTop="2dp" />
+
+    <TextView
+        android:id="@+id/tv_observaciones_atencion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textColor="@color/seprise_muted"
+        android:layout_marginTop="2dp" />
+
+    <TextView
+        android:id="@+id/tv_turno_atencion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/seprise_blue"
+        android:layout_marginTop="2dp" />
 </LinearLayout>

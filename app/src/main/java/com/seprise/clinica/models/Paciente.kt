@@ -9,6 +9,7 @@ data class Paciente(
     val telefono: String,
     val direccion: String,
     val activo: Boolean = true,
+    val empadronamiento: String = "",
 ) {
     val fullName: String
         get() = "$nombre $apellido".trim()

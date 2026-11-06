@@ -9,7 +9,12 @@ object PacientesManager {
         if (AppData.PACIENTES.any { it.id == paciente.id }) {
             return false
         }
-        AppData.PACIENTES.add(paciente)
+        val conEmpadronamiento = if (paciente.empadronamiento.isBlank()) {
+            paciente.copy(empadronamiento = "EMP-${paciente.id}")
+        } else {
+            paciente
+        }
+        AppData.PACIENTES.add(conEmpadronamiento)
         return true
     }
 

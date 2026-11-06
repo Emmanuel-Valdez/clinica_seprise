@@ -39,7 +39,7 @@
             android:id="@+id/actv_paciente"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:hint="Escriba el nombre o DNI del paciente..."
+            android:hint="Nombre, apellido o n° empadronamiento..."
             android:completionThreshold="1"
             android:paddingHorizontal="12dp"
             android:background="@drawable/bg_input"
@@ -48,18 +48,84 @@
             android:layout_marginBottom="12dp" />
 
         <TextView
+            android:id="@+id/tv_paciente_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/seprise_muted"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Valor de la Consulta ($):"
+            android:text="Historia clínica (antecedentes):"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <TextView
+            android:id="@+id/tv_hc_resumen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/seprise_ink"
+            android:background="@drawable/bg_nav_active"
+            android:padding="10dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_turno_dia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/seprise_blue"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Diagnóstico (obligatorio):"
             android:textStyle="bold"
             android:textColor="@color/seprise_ink" />
 
         <EditText
-            android:id="@+id/et_valor_consulta"
+            android:id="@+id/et_diagnostico_atencion"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:hint="Ej: 15000"
-            android:inputType="numberDecimal"
+            android:hint="Ingrese el diagnóstico..."
+            android:inputType="text"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Indicaciones:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_indicaciones_atencion"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:hint="Tratamiento e indicaciones..."
+            android:gravity="top|start"
+            android:inputType="textMultiLine"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Observaciones:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_observaciones_atencion"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:hint="Notas libres..."
+            android:gravity="top|start"
+            android:inputType="textMultiLine"
             android:layout_marginBottom="12dp" />
 
         <TextView
@@ -81,17 +147,16 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Observaciones / Diagnóstico:"
+            android:text="Valor de la Consulta ($):"
             android:textStyle="bold"
             android:textColor="@color/seprise_ink" />
 
         <EditText
-            android:id="@+id/et_observaciones_atencion"
+            android:id="@+id/et_valor_consulta"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:hint="Ingrese observaciones o diagnóstico..."
-            android:gravity="top|start"
-            android:inputType="textMultiLine"
+            android:layout_height="48dp"
+            android:hint="Ej: 15000"
+            android:inputType="numberDecimal"
             android:layout_marginBottom="12dp" />
 
     </LinearLayout>

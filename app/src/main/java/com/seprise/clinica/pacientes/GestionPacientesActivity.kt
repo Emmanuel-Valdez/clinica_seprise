@@ -85,7 +85,7 @@ class GestionPacientesActivity : AppCompatActivity() {
             val tvEstado = item.findViewById<TextView>(R.id.tv_estado_paciente)
 
             tvNombre.text = paciente.fullName
-            tvDni.text = "DNI: ${paciente.dni}"
+            tvDni.text = "DNI: ${paciente.dni} · Empadronamiento: ${paciente.empadronamiento}"
             tvContacto.text = "Mail: ${paciente.mail} | Tel: ${paciente.telefono}"
 
             if (paciente.activo) {

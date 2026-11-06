@@ -39,16 +39,16 @@ object AppData {
     )
 
     val PACIENTES = mutableListOf(
-        Paciente(id = 1, nombre = "Ana", apellido = "López", dni = "35123456", mail = "ana@mail.com", telefono = "1144445555", direccion = "Av. Mayo 123"),
-        Paciente(id = 2, nombre = "Roberto", apellido = "Fernández", dni = "28987654", mail = "roberto@mail.com", telefono = "1155556666", direccion = "Belgrano 456"),
-        Paciente(id = 3, nombre = "Lucía", apellido = "Martínez", dni = "41234567", mail = "lucia@mail.com", telefono = "1166667777", direccion = "Sarmiento 789"),
-        Paciente(id = 4, nombre = "Diego", apellido = "Sosa", dni = "32765432", mail = "diego@mail.com", telefono = "1177778888", direccion = "Mitre 321"),
-        Paciente(id = 5, nombre = "Valentina", apellido = "Romero", dni = "38901234", mail = "valentina@mail.com", telefono = "1188889999", direccion = "Rivadavia 654"),
-        Paciente(id = 6, nombre = "Martín", apellido = "Álvarez", dni = "29543210", mail = "martin@mail.com", telefono = "1199990000", direccion = "San Martín 987"),
-        Paciente(id = 7, nombre = "Sofía", apellido = "Benítez", dni = "40111222", mail = "sofia@mail.com", telefono = "1100001111", direccion = "Alsina 147"),
-        Paciente(id = 8, nombre = "Nicolás", apellido = "Ferreyra", dni = "36444555", mail = "nicolas@mail.com", telefono = "1111112222", direccion = "Moreno 258"),
-        Paciente(id = 9, nombre = "Camila", apellido = "Duarte", dni = "42333444", mail = "camila@mail.com", telefono = "1122223333", direccion = "Urquiza 369"),
-        Paciente(id = 10, nombre = "Tomás", apellido = "Rivas", dni = "31666777", mail = "tomas@mail.com", telefono = "1133334444", direccion = "9 de Julio 741", activo = false)
+        Paciente(id = 1, nombre = "Ana", apellido = "López", dni = "35123456", mail = "ana@mail.com", telefono = "1144445555", direccion = "Av. Mayo 123", empadronamiento = "EMP-1"),
+        Paciente(id = 2, nombre = "Roberto", apellido = "Fernández", dni = "28987654", mail = "roberto@mail.com", telefono = "1155556666", direccion = "Belgrano 456", empadronamiento = "EMP-2"),
+        Paciente(id = 3, nombre = "Lucía", apellido = "Martínez", dni = "41234567", mail = "lucia@mail.com", telefono = "1166667777", direccion = "Sarmiento 789", empadronamiento = "EMP-3"),
+        Paciente(id = 4, nombre = "Diego", apellido = "Sosa", dni = "32765432", mail = "diego@mail.com", telefono = "1177778888", direccion = "Mitre 321", empadronamiento = "EMP-4"),
+        Paciente(id = 5, nombre = "Valentina", apellido = "Romero", dni = "38901234", mail = "valentina@mail.com", telefono = "1188889999", direccion = "Rivadavia 654", empadronamiento = "EMP-5"),
+        Paciente(id = 6, nombre = "Martín", apellido = "Álvarez", dni = "29543210", mail = "martin@mail.com", telefono = "1199990000", direccion = "San Martín 987", empadronamiento = "EMP-6"),
+        Paciente(id = 7, nombre = "Sofía", apellido = "Benítez", dni = "40111222", mail = "sofia@mail.com", telefono = "1100001111", direccion = "Alsina 147", empadronamiento = "EMP-7"),
+        Paciente(id = 8, nombre = "Nicolás", apellido = "Ferreyra", dni = "36444555", mail = "nicolas@mail.com", telefono = "1111112222", direccion = "Moreno 258", empadronamiento = "EMP-8"),
+        Paciente(id = 9, nombre = "Camila", apellido = "Duarte", dni = "42333444", mail = "camila@mail.com", telefono = "1122223333", direccion = "Urquiza 369", empadronamiento = "EMP-9"),
+        Paciente(id = 10, nombre = "Tomás", apellido = "Rivas", dni = "31666777", mail = "tomas@mail.com", telefono = "1133334444", direccion = "9 de Julio 741", activo = false, empadronamiento = "EMP-10")
     )
 
     val ADMINISTRADORES = mutableListOf<Administrador>(
@@ -140,7 +140,34 @@ object AppData {
     )
 
     val HONORARIOS = mutableListOf<Any>()
-    val ATENCIONES = mutableListOf<Atencion>()
+    val ATENCIONES = mutableListOf(
+        Atencion(
+            id = 1,
+            medicoId = 1,
+            pacienteId = 7,
+            turnoId = 3,
+            fecha = hoy,
+            hora = LocalTime.of(9, 30),
+            duracion = 15,
+            observaciones = "",
+            valorConsulta = 15000.0,
+            diagnostico = "Control cardiológico",
+            indicaciones = "Continuar con tratamiento habitual"
+        ),
+        Atencion(
+            id = 2,
+            medicoId = 1,
+            pacienteId = 1,
+            turnoId = 0,
+            fecha = hoy.minusDays(7),
+            hora = LocalTime.of(10, 0),
+            duracion = 15,
+            observaciones = "",
+            valorConsulta = 14000.0,
+            diagnostico = "Hipertensión leve",
+            indicaciones = "Dieta hiposódica y control en 30 días"
+        )
+    )
 
     val ESTUDIOS = mutableListOf(
         Estudio(id = 1, nombre = "Análisis de sangre", pacienteId = 1, agendaId = 5, fecha = hoy, hora = LocalTime.of(7, 30), duracion = 10, observaciones = "Ayuno de 8 horas"),
