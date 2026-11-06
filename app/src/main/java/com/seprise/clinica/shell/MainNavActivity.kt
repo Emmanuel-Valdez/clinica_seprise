@@ -17,6 +17,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.AutoCompleteTextView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -28,6 +29,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.agenda.AgendaManager
+import com.seprise.clinica.atencion.AtencionManager
 import com.seprise.clinica.auth.LoginActivity
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.Rol
@@ -36,6 +38,7 @@ import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.estudios.EstudiosManager
 import com.seprise.clinica.insumos.InsumosManager
 import com.seprise.clinica.models.Agenda
+import com.seprise.clinica.models.Atencion
 import com.seprise.clinica.models.Circuito
 import com.seprise.clinica.models.EstadoTurno
 import com.seprise.clinica.models.Estudio

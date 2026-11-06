@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/tv_dialog_atencion_titulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_blue"
+            android:text="Cargar Atención de Paciente"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tv_medico_logueado_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Buscar / Seleccionar Paciente:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <AutoCompleteTextView
+            android:id="@+id/actv_paciente"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Escriba el nombre o DNI del paciente..."
+            android:completionThreshold="1"
+            android:paddingHorizontal="12dp"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/seprise_ink"
+            android:textColorHint="@color/seprise_placeholder"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Valor de la Consulta ($):"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_valor_consulta"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Ej: 15000"
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Duración (Minutos):"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_duracion_atencion"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="15"
+            android:inputType="number"
+            android:text="15"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Observaciones / Diagnóstico:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_observaciones_atencion"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:hint="Ingrese observaciones o diagnóstico..."
+            android:gravity="top|start"
+            android:inputType="textMultiLine"
+            android:layout_marginBottom="12dp" />
+
+    </LinearLayout>
+</ScrollView>
