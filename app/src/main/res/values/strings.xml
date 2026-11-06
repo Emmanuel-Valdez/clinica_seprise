@@ -38,4 +38,25 @@
     <string name="cu01_perfil_btn_guardar">Guardar cambios</string>
     <string name="cu01_perfil_guardado">Cambios guardados.</string>
     <string name="cu01_perfil_no_editable">(no editable)</string>
+
+    <!-- CU06 — honorarios -->
+    <string name="cu06_title">Honorarios</string>
+    <string name="cu06_subtitle">Liquidá honorarios por médico y período.</string>
+    <string name="cu06_label_medico">Médico</string>
+    <string name="cu06_label_desde">Desde (AAAA-MM-DD)</string>
+    <string name="cu06_label_hasta">Hasta (AAAA-MM-DD)</string>
+    <string name="cu06_btn_calcular">Calcular honorarios</string>
+    <string name="cu06_btn_liquidar">Liquidar y emitir recibo</string>
+    <string name="cu06_btn_cerrar">Cerrar</string>
+    <string name="cu06_sin_permiso">Solo el rol administrativo puede liquidar honorarios.</string>
+    <string name="cu06_error_fecha">Formato de fecha inválido (AAAA-MM-DD).</string>
+    <string name="cu06_error_rango">La fecha desde no puede ser posterior a la hasta.</string>
+    <string name="cu06_sin_atenciones">No hay atenciones pendientes en el período.</string>
+    <string name="cu06_resumen">%1$d atenciones · Total %2$s</string>
+    <string name="cu06_confirm_title">Confirmar liquidación</string>
+    <string name="cu06_confirm_msg">Médico: %1$s\nPeríodo: %2$s\nAtenciones: %3$d\nTotal: %4$s</string>
+    <string name="cu06_confirm_btn">Confirmar</string>
+    <string name="cu06_recibo_title">Recibo de honorarios</string>
+    <string name="cu06_recibo_msg">Médico: %1$s\nPeríodo: %2$s\nEmisión: %3$s\nAtenciones: %4$d\n\n%5$s\n\nTotal: %6$s</string>
+    <string name="cu06_liquidado">Liquidación registrada.</string>
 </resources>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/seprise_bg"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tv_titulo_honorarios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/cu06_title"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@color/seprise_ink" />
+
+    <TextView
+        android:id="@+id/tv_subtitulo_honorarios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/cu06_subtitle"
+        android:textSize="14sp"
+        android:textColor="@color/seprise_muted"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/cu06_label_medico"
+        android:textSize="13sp"
+        android:textColor="@color/seprise_muted"
+        android:layout_marginBottom="4dp" />
+
+    <Spinner
+        android:id="@+id/spinner_medico_honorarios"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="12dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="6dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cu06_label_desde"
+                android:textSize="13sp"
+                android:textColor="@color/seprise_muted"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/et_honorario_desde"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_input"
+                android:inputType="text"
+                android:paddingHorizontal="14dp"
+                android:textColor="@color/seprise_ink"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="6dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cu06_label_hasta"
+                android:textSize="13sp"
+                android:textColor="@color/seprise_muted"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/et_honorario_hasta"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_input"
+                android:inputType="text"
+                android:paddingHorizontal="14dp"
+                android:textColor="@color/seprise_ink"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_calcular_honorarios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/cu06_btn_calcular"
+        android:textSize="14sp"
+        android:layout_marginBottom="12dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_resumen_honorarios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/seprise_ink"
+                android:layout_marginBottom="12dp" />
+
+            <LinearLayout
+                android:id="@+id/container_honorarios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <Button
+                android:id="@+id/btn_liquidar_honorarios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cu06_btn_liquidar"
+                android:textSize="14sp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

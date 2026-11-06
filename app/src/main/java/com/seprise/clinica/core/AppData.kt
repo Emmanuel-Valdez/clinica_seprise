@@ -8,6 +8,7 @@ import com.seprise.clinica.models.Especialidad
 import com.seprise.clinica.models.EstadoTurno
 import com.seprise.clinica.models.Estudio
 import com.seprise.clinica.models.Insumo
+import com.seprise.clinica.models.LiquidacionHonorario
 import com.seprise.clinica.models.Medico
 import com.seprise.clinica.models.Modalidad
 import com.seprise.clinica.models.Paciente
@@ -141,7 +142,7 @@ object AppData {
         )
     )
 
-    val HONORARIOS = mutableListOf<Any>()
+    val HONORARIOS = mutableListOf<LiquidacionHonorario>()
     val ATENCIONES = mutableListOf(
         Atencion(
             id = 1,
