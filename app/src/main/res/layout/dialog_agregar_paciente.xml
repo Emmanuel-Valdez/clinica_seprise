@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/tv_dialog_paciente_titulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_blue"
+            android:text="Agregar Paciente"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nombre:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_nombre_paciente"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Ej: Juan"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Apellido:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_apellido_paciente"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Ej: Pérez"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DNI:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_dni_paciente"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Ej: 30123456"
+            android:inputType="number"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Correo Electrónico:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_mail_paciente"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Ej: juan@mail.com"
+            android:inputType="textEmailAddress"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Teléfono:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_telefono_paciente"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Ej: 1144332211"
+            android:inputType="phone"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dirección:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_direccion_paciente"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Ej: Av. Rivadavia 1234"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="12dp" />
+
+    </LinearLayout>
+</ScrollView>
