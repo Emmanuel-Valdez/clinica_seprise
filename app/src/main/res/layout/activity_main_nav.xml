@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- paddings son espaciado de layout, no tokens Figma; mover a dimens cuando el diseñador los pase -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/cu01_root"
     android:layout_width="match_parent"
@@ -7,19 +6,33 @@
     android:background="@color/seprise_bg"
     android:orientation="vertical">
 
+    <!-- Top App Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="12dp">
+        android:padding="12dp"
+        android:background="@color/seprise_surface">
+
+        <ImageView
+            android:id="@+id/btn_home_logo"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/seprise_logo"
+            android:scaleType="fitCenter"
+            android:contentDescription="Logo SePrise"
+            android:clickable="true"
+            android:focusable="true" />
 
         <TextView
+            android:id="@+id/txt_nombre_usuario"
             style="@style/Text.SePrise.Title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/app_name" />
+            android:layout_marginStart="8dp"
+            android:text="" />
 
         <Button
             android:id="@+id/cu01_btn_perfil"
@@ -38,15 +51,30 @@
             android:text="@string/cu01_btn_logout" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/cu01_contenido"
-        style="@style/Text.SePrise.Body"
+    <!-- Main Content Container (Holds Home screen or active module view) -->
+    <FrameLayout
+        android:id="@+id/cu01_contenido_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="@string/cu01_shell_content_hint" />
+        android:layout_weight="1">
 
+        <!-- Default Home View (Pantalla de inicio) -->
+        <FrameLayout
+            android:id="@+id/layout_inicio_home"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/img_home_logo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/seprise_background"
+                android:scaleType="centerCrop"
+                android:contentDescription="Fondo Clínica SePrise" />
+        </FrameLayout>
+    </FrameLayout>
+
+    <!-- Always Visible Bottom Navigation Bar -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -2,6 +2,7 @@ package com.seprise.clinica.core
 
 import com.seprise.clinica.models.Administrador
 import com.seprise.clinica.models.Agenda
+import com.seprise.clinica.models.Atencion
 import com.seprise.clinica.models.Circuito
 import com.seprise.clinica.models.Especialidad
 import com.seprise.clinica.models.Estudio
@@ -64,7 +65,7 @@ object AppData {
     )
 
     val HONORARIOS = mutableListOf<Any>()
-    val ATENCIONES = mutableListOf<Any>()
+    val ATENCIONES = mutableListOf<Atencion>()
 
 
     val ESTUDIOS = mutableListOf<Estudio>()
