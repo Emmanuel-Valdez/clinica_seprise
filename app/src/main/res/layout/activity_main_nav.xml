@@ -59,19 +59,20 @@
         android:layout_weight="1">
 
         <!-- Default Home View (Pantalla de inicio) -->
-        <FrameLayout
+        <ScrollView
             android:id="@+id/layout_inicio_home"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:clipToPadding="false">
 
-            <ImageView
-                android:id="@+id/img_home_logo"
+            <LinearLayout
+                android:id="@+id/home_contenido"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/seprise_background"
-                android:scaleType="centerCrop"
-                android:contentDescription="Fondo Clínica SePrise" />
-        </FrameLayout>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp" />
+        </ScrollView>
     </FrameLayout>
 
     <!-- Always Visible Bottom Navigation Bar -->
