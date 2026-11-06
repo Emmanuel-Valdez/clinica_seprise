@@ -549,9 +549,24 @@ class MainNavActivity : AppCompatActivity() {
 
             for (paciente in filtrados) {
                 val item = LayoutInflater.from(this).inflate(R.layout.item_paciente, containerPacientes, false)
-                item.findViewById<TextView>(R.id.tv_nombre_paciente).text = paciente.fullName
-                item.findViewById<TextView>(R.id.tv_dni_paciente).text = "DNI: ${paciente.dni}"
-                item.findViewById<TextView>(R.id.tv_contacto_paciente).text = "Mail: ${paciente.mail} | Tel: ${paciente.telefono}"
+
+                val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_paciente)
+                val tvDni = item.findViewById<TextView>(R.id.tv_dni_paciente)
+                val tvContacto = item.findViewById<TextView>(R.id.tv_contacto_paciente)
+                val tvEstado = item.findViewById<TextView>(R.id.tv_estado_paciente)
+
+                tvNombre.text = paciente.fullName
+                tvDni.text = "DNI: ${paciente.dni}"
+                tvContacto.text = "Mail: ${paciente.mail} | Tel: ${paciente.telefono}"
+
+                if (paciente.activo) {
+                    tvEstado.text = "Activo"
+                    tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_success))
+                } else {
+                    tvEstado.text = "Inhabilitado"
+                    tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_error))
+                }
+
                 item.setOnClickListener { abrirModalEditarPaciente(paciente) { cargarLista(etBuscar.text.toString()) } }
                 containerPacientes.addView(item)
             }
@@ -576,6 +591,7 @@ class MainNavActivity : AppCompatActivity() {
         val etMail = dialogView.findViewById<EditText>(R.id.et_mail_paciente)
         val etTelefono = dialogView.findViewById<EditText>(R.id.et_telefono_paciente)
         val etDireccion = dialogView.findViewById<EditText>(R.id.et_direccion_paciente)
+        val cbActivo = dialogView.findViewById<CheckBox>(R.id.cb_activo_paciente)
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -592,6 +608,7 @@ class MainNavActivity : AppCompatActivity() {
             val mail = etMail.text.toString().trim()
             val telefono = etTelefono.text.toString().trim()
             val direccion = etDireccion.text.toString().trim()
+            val activo = cbActivo.isChecked
 
             if (nombre.isEmpty() || apellido.isEmpty() || dni.isEmpty()) {
                 Toast.makeText(this, "Complete los campos obligatorios (Nombre, Apellido, DNI)", Toast.LENGTH_SHORT).show()
@@ -606,7 +623,8 @@ class MainNavActivity : AppCompatActivity() {
                 dni = dni,
                 mail = mail,
                 telefono = telefono,
-                direccion = direccion
+                direccion = direccion,
+                activo = activo
             )
 
             val creado = PacientesManager.crearPaciente(nuevoPaciente)
@@ -631,13 +649,21 @@ class MainNavActivity : AppCompatActivity() {
         val etMail = dialogView.findViewById<EditText>(R.id.et_mail_paciente).apply { setText(paciente.mail) }
         val etTelefono = dialogView.findViewById<EditText>(R.id.et_telefono_paciente).apply { setText(paciente.telefono) }
         val etDireccion = dialogView.findViewById<EditText>(R.id.et_direccion_paciente).apply { setText(paciente.direccion) }
+        val cbActivo = dialogView.findViewById<CheckBox>(R.id.cb_activo_paciente).apply { isChecked = paciente.activo }
+
+        val textoAccionInhabilitar = if (paciente.activo) "Inhabilitar" else "Habilitar"
 
         AlertDialog.Builder(this)
             .setView(dialogView)
             .setNegativeButton("Cancelar", null)
-            .setNeutralButton("Eliminar") { _, _ ->
-                PacientesManager.eliminarPaciente(paciente.id)
-                Toast.makeText(this, "Paciente eliminado", Toast.LENGTH_SHORT).show()
+            .setNeutralButton(textoAccionInhabilitar) { _, _ ->
+                if (paciente.activo) {
+                    PacientesManager.inhabilitarPaciente(paciente.id)
+                    Toast.makeText(this, "Paciente inhabilitado con éxito", Toast.LENGTH_SHORT).show()
+                } else {
+                    PacientesManager.habilitarPaciente(paciente.id)
+                    Toast.makeText(this, "Paciente habilitado con éxito", Toast.LENGTH_SHORT).show()
+                }
                 onUpdate()
             }
             .setPositiveButton("Guardar Cambios") { _, _ ->
@@ -647,6 +673,7 @@ class MainNavActivity : AppCompatActivity() {
                 val mail = etMail.text.toString().trim()
                 val telefono = etTelefono.text.toString().trim()
                 val direccion = etDireccion.text.toString().trim()
+                val activo = cbActivo.isChecked
 
                 if (nombre.isNotEmpty() && apellido.isNotEmpty() && dni.isNotEmpty()) {
                     val actualizado = paciente.copy(
@@ -655,7 +682,8 @@ class MainNavActivity : AppCompatActivity() {
                         dni = dni,
                         mail = mail,
                         telefono = telefono,
-                        direccion = direccion
+                        direccion = direccion,
+                        activo = activo
                     )
                     PacientesManager.modificarPaciente(actualizado)
                     Toast.makeText(this, "Paciente actualizado", Toast.LENGTH_SHORT).show()

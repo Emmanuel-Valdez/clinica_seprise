@@ -1,8 +1,6 @@
-
 package com.seprise.clinica.pacientes
 
 import com.seprise.clinica.core.AppData
-import com.seprise.clinica.models.Insumo
 import com.seprise.clinica.models.Paciente
 
 object PacientesManager {
@@ -22,6 +20,22 @@ object PacientesManager {
         return true
     }
 
+    fun inhabilitarPaciente(id: Int): Boolean {
+        val indice = AppData.PACIENTES.indexOfFirst { it.id == id }
+        if (indice == -1) return false
+        val paciente = AppData.PACIENTES[indice]
+        AppData.PACIENTES[indice] = paciente.copy(activo = false)
+        return true
+    }
+
+    fun habilitarPaciente(id: Int): Boolean {
+        val indice = AppData.PACIENTES.indexOfFirst { it.id == id }
+        if (indice == -1) return false
+        val paciente = AppData.PACIENTES[indice]
+        AppData.PACIENTES[indice] = paciente.copy(activo = true)
+        return true
+    }
+
     fun eliminarPaciente(id: Int): Boolean {
         return AppData.PACIENTES.removeAll { it.id == id }
     }
@@ -33,6 +47,4 @@ object PacientesManager {
     fun obtenerPacientePorId(id: Int): Paciente? {
         return AppData.PACIENTES.find { it.id == id }
     }
-
 }
-
