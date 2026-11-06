@@ -1,5 +1,6 @@
 package com.seprise.clinica.turnos
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -118,7 +119,7 @@ class GestionTurnosActivity : AppCompatActivity() {
             tvEspecialidad.text = "Especialidad: ${medico.especialidad.name}"
 
             val agendaExistente = TurnosManager.obtenerAgendaPorMedico(medico.id)
-            val turnosReservados = TurnosManager.obtenerTurnosPorMedico(medico.id)
+            val turnosReservados = filtrarTurnosPorRol(TurnosManager.obtenerTurnosPorMedico(medico.id))
 
             if (agendaExistente != null && agendaExistente.circuito == Circuito.CONSULTORIOS_EXTERNOS) {
                 tvEstado.text = "Agenda disponible (${turnosReservados.size} turnos)"
@@ -173,6 +174,9 @@ class GestionTurnosActivity : AppCompatActivity() {
             btnAccion.text = "Sacar Turno"
             btnAccion.isEnabled = true
             btnAccion.setOnClickListener { abrirModalSacarTurnoEstudio(agenda) }
+
+            val turnosEstudio = filtrarTurnosPorRol(AppData.TURNOS.filter { it.agendaId == agenda.id })
+            item.setOnClickListener { mostrarTurnosDialog("Estudio ${agenda.servicio.name}", turnosEstudio) }
 
             containerMedicos.addView(item)
         }
@@ -253,7 +257,8 @@ class GestionTurnosActivity : AppCompatActivity() {
                 fechaInicial
             }
 
-            horariosDisponibles = generarHorariosDisponibles(agenda, fechaIngresada).toMutableList()
+            val incluirOcupados = cbSobreturno.isChecked
+            horariosDisponibles = generarHorariosDisponibles(agenda, fechaIngresada, incluirOcupados).toMutableList()
             val horariosStr = if (horariosDisponibles.isEmpty()) {
                 listOf("Sin horarios libres en esta fecha")
             } else {
@@ -267,13 +272,27 @@ class GestionTurnosActivity : AppCompatActivity() {
 
         actualizarHorarios()
 
-        etFecha.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                actualizarHorarios()
+        cbSobreturno.setOnCheckedChangeListener { _, _ -> actualizarHorarios() }
+
+        etFecha.isFocusable = false
+        etFecha.isClickable = true
+        etFecha.setOnClickListener {
+            val base = try {
+                LocalDate.parse(etFecha.text.toString().trim())
+            } catch (e: Exception) {
+                fechaInicial
             }
-            override fun afterTextChanged(s: Editable?) {}
-        })
+            DatePickerDialog(
+                this,
+                { _, anio, mes, dia ->
+                    etFecha.setText(LocalDate.of(anio, mes + 1, dia).toString())
+                    actualizarHorarios()
+                },
+                base.year,
+                base.monthValue - 1,
+                base.dayOfMonth
+            ).show()
+        }
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -309,10 +328,21 @@ class GestionTurnosActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val horaTurno = if (horariosDisponibles.isNotEmpty()) {
-                horariosDisponibles.getOrNull(spinnerHorario.selectedItemPosition) ?: agenda.horaInicio
-            } else {
-                agenda.horaInicio
+            if (horariosDisponibles.isEmpty()) {
+                Toast.makeText(this, "No hay horarios libres en esta fecha", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val horaTurno = horariosDisponibles.getOrNull(spinnerHorario.selectedItemPosition) ?: agenda.horaInicio
+
+            if (cbSobreturno.isChecked && AppData.TURNOS.any {
+                    it.agendaId == agenda.id && it.fecha == fechaTurno &&
+                        it.estado == EstadoTurno.RESERVADO && it.esSobreturno &&
+                        it.hora.hour == horaTurno.hour
+                }
+            ) {
+                Toast.makeText(this, "Ya hay un sobreturno reservado en esa hora", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
             val nuevoTurno = Turno(
@@ -338,8 +368,8 @@ class GestionTurnosActivity : AppCompatActivity() {
         }
     }
 
-    /** Genera los horarios de citas disponibles excluyendo turnos ya reservados. */
-    private fun generarHorariosDisponibles(agenda: Agenda, fecha: LocalDate): List<LocalTime> {
+    /** Genera los horarios de citas; con [incluirOcupados] permite elegir la hora de un sobreturno. */
+    private fun generarHorariosDisponibles(agenda: Agenda, fecha: LocalDate, incluirOcupados: Boolean = false): List<LocalTime> {
         val slots = mutableListOf<LocalTime>()
         var actual = agenda.horaInicio
         val fin = agenda.horaFin
@@ -349,6 +379,8 @@ class GestionTurnosActivity : AppCompatActivity() {
             slots.add(actual)
             actual = actual.plusMinutes(duracion)
         }
+
+        if (incluirOcupados) return slots
 
         val ocupados = AppData.TURNOS.filter {
             it.agendaId == agenda.id && it.fecha == fecha && it.estado == EstadoTurno.RESERVADO && !it.esSobreturno
@@ -374,12 +406,58 @@ class GestionTurnosActivity : AppCompatActivity() {
             "• Fecha: ${turno.fecha} ${turno.hora}\n  Paciente: $pacienteNombre\n  Estado: ${turno.estado}\n  Sobreturno: ${if (turno.esSobreturno) "Sí" else "No"}"
         }
 
-        AlertDialog.Builder(this)
+        val reservados = turnos.filter { it.estado == EstadoTurno.RESERVADO }
+
+        val builder = AlertDialog.Builder(this)
             .setTitle("Turnos de $nombreHeader")
             .setMessage(detalleTurnos)
             .setNegativeButton("Cerrar", null)
+
+        if (reservados.isNotEmpty()) {
+            builder.setPositiveButton("Cancelar turno") { _, _ ->
+                mostrarSelectorCancelar(reservados)
+            }
+        }
+
+        builder.show()
+    }
+
+    private fun mostrarSelectorCancelar(turnos: List<Turno>) {
+        val etiquetas = turnos.map { turno ->
+            val paciente = AppData.PACIENTES.find { it.id == turno.pacienteId }
+            "${turno.fecha} ${turno.hora} - ${paciente?.fullName ?: "Paciente ${turno.pacienteId}"}${if (turno.esSobreturno) " (sobreturno)" else ""}"
+        }.toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle("Cancelar turno")
+            .setItems(etiquetas) { _, indice ->
+                confirmarCancelacion(turnos[indice])
+            }
+            .setNegativeButton("Volver", null)
             .show()
     }
+
+    private fun confirmarCancelacion(turno: Turno) {
+        val paciente = AppData.PACIENTES.find { it.id == turno.pacienteId }
+        AlertDialog.Builder(this)
+            .setTitle("Cancelar turno")
+            .setMessage("¿Cancelar el turno de ${paciente?.fullName ?: "Paciente ${turno.pacienteId}"} el ${turno.fecha} a las ${turno.hora}?")
+            .setPositiveButton("Sí, cancelar") { _, _ ->
+                if (TurnosManager.modificarTurno(turno.copy(estado = EstadoTurno.CANCELADO))) {
+                    Toast.makeText(this, "Turno cancelado", Toast.LENGTH_SHORT).show()
+                    cargarLista(etBuscarMedico.text.toString())
+                }
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
+    private fun filtrarTurnosPorRol(turnos: List<Turno>): List<Turno> =
+        if (SessionState.rol == Rol.PACIENTE && SessionState.loggedPersonId != null) {
+            turnos.filter { it.pacienteId == SessionState.loggedPersonId }
+        } else {
+            turnos
+        }
 
     private fun normalizarTexto(texto: String): String {
         val normalizado = Normalizer.normalize(texto, Normalizer.Form.NFD)

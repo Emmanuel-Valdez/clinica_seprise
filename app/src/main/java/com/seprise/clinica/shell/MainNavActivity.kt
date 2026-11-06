@@ -91,9 +91,9 @@ class MainNavActivity : AppCompatActivity() {
         itemInicio?.let { marcarActivo(it) }
     }
 
-    /** Regla de acceso por rol: agenda solo para Administrativos y Médicos; turnos solo para Pacientes. */
+    /** Regla de acceso por rol: administrativo gestiona todo; médico atiende/agenda; paciente agenda lo propio. */
     private fun modulosDe(rol: Rol): List<Modulo> = when (rol) {
-        Rol.ADMINISTRATIVO -> listOf(pacientes, agenda, estudios, insumos, honorarios)
+        Rol.ADMINISTRATIVO -> listOf(pacientes, agenda, turnos, estudios, insumos, honorarios)
         Rol.MEDICO -> listOf(atencion, agenda, estudios)
         Rol.PACIENTE -> listOf(turnos, estudios)
     }

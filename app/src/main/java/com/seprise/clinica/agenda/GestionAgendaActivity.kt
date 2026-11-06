@@ -1,5 +1,6 @@
 package com.seprise.clinica.agenda
 
+import android.app.TimePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -140,8 +141,13 @@ class GestionAgendaActivity : AppCompatActivity() {
             } else {
                 tvEstado.text = "Sin Agenda"
                 tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_muted))
-                btnAccion.text = "Cargar Agenda"
-                btnAccion.setOnClickListener { abrirModalCargarAgenda(medico) }
+                if (SessionState.rol == Rol.MEDICO) {
+                    btnAccion.text = "Sin Agenda"
+                    btnAccion.isEnabled = false
+                } else {
+                    btnAccion.text = "Cargar Agenda"
+                    btnAccion.setOnClickListener { abrirModalCargarAgenda(medico) }
+                }
             }
 
             containerMedicos.addView(item)
@@ -219,6 +225,11 @@ class GestionAgendaActivity : AppCompatActivity() {
         val etDuracionCita = dialogView.findViewById<EditText>(R.id.et_duracion_cita)
         val cbAyuno = dialogView.findViewById<CheckBox>(R.id.cb_requiere_ayuno)
 
+        configurarHoraPicker(etHoraInicio, LocalTime.of(8, 0))
+        configurarHoraPicker(etHoraFin, LocalTime.of(16, 0))
+        // ponytail: el modelo solo tiene especialidades médicas; 15 min para todas hasta que exista fisio/salud mental.
+        etDuracionCita.setText("15")
+
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .setNegativeButton("Cancelar", null)
@@ -245,6 +256,12 @@ class GestionAgendaActivity : AppCompatActivity() {
             val horaInicio = parsearHora(etHoraInicio.text.toString().trim(), LocalTime.of(8, 0))
             val horaFin = parsearHora(etHoraFin.text.toString().trim(), LocalTime.of(16, 0))
             val duracionMins = etDuracionCita.text.toString().toIntOrNull() ?: 20
+
+            val errorHorario = validarHorario(horaInicio, horaFin, duracionMins)
+            if (errorHorario != null) {
+                Toast.makeText(this, errorHorario, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             val servicioDelMedico = try {
                 Servicio.valueOf(medico.especialidad.name)
@@ -310,6 +327,11 @@ class GestionAgendaActivity : AppCompatActivity() {
         val etDuracionCita = dialogView.findViewById<EditText>(R.id.et_duracion_cita)
         val cbAyuno = dialogView.findViewById<CheckBox>(R.id.cb_requiere_ayuno)
 
+        configurarHoraPicker(etHoraInicio, LocalTime.of(8, 0))
+        configurarHoraPicker(etHoraFin, LocalTime.of(16, 0))
+        // ponytail: el modelo solo tiene especialidades médicas; 15 min para todas hasta que exista fisio/salud mental.
+        etDuracionCita.setText("15")
+
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .setNegativeButton("Cancelar", null)
@@ -336,6 +358,12 @@ class GestionAgendaActivity : AppCompatActivity() {
             val horaInicio = parsearHora(etHoraInicio.text.toString().trim(), LocalTime.of(8, 0))
             val horaFin = parsearHora(etHoraFin.text.toString().trim(), LocalTime.of(16, 0))
             val duracionMins = etDuracionCita.text.toString().toIntOrNull() ?: 15
+
+            val errorHorario = validarHorario(horaInicio, horaFin, duracionMins)
+            if (errorHorario != null) {
+                Toast.makeText(this, errorHorario, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             val servicioSeleccionado = Servicio.valueOf(spinnerServicio.selectedItem.toString())
 
@@ -404,9 +432,12 @@ class GestionAgendaActivity : AppCompatActivity() {
                 abrirModalModificarAgenda(medico, agenda)
             }
             builder.setNeutralButton("Eliminar Agenda") { _, _ ->
-                AgendaManager.eliminarAgenda(agenda.id)
-                Toast.makeText(this, "Agenda eliminada", Toast.LENGTH_SHORT).show()
-                cargarLista(etBuscarMedico.text.toString())
+                if (AgendaManager.eliminarAgenda(agenda.id)) {
+                    Toast.makeText(this, "Agenda eliminada", Toast.LENGTH_SHORT).show()
+                    cargarLista(etBuscarMedico.text.toString())
+                } else {
+                    Toast.makeText(this, "No se puede eliminar: la agenda tiene turnos", Toast.LENGTH_LONG).show()
+                }
             }
             builder.setNegativeButton("Cerrar", null)
         } else {
@@ -460,9 +491,12 @@ class GestionAgendaActivity : AppCompatActivity() {
 
         if (SessionState.rol != Rol.MEDICO) {
             builder.setNeutralButton("Eliminar Agenda") { _, _ ->
-                AppData.AGENDAS.removeAll { it.id == agenda.id }
-                Toast.makeText(this, "Agenda de estudio eliminada", Toast.LENGTH_SHORT).show()
-                cargarLista(etBuscarMedico.text.toString())
+                if (AgendaManager.eliminarAgenda(agenda.id)) {
+                    Toast.makeText(this, "Agenda de estudio eliminada", Toast.LENGTH_SHORT).show()
+                    cargarLista(etBuscarMedico.text.toString())
+                } else {
+                    Toast.makeText(this, "No se puede eliminar: la agenda tiene turnos", Toast.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -493,6 +527,9 @@ class GestionAgendaActivity : AppCompatActivity() {
         val etDuracionCita = dialogView.findViewById<EditText>(R.id.et_duracion_cita).apply { setText(agenda.duracionCita.toString()) }
         val cbAyuno = dialogView.findViewById<CheckBox>(R.id.cb_requiere_ayuno).apply { isChecked = agenda.requiereAyuno }
 
+        configurarHoraPicker(etHoraInicio, agenda.horaInicio)
+        configurarHoraPicker(etHoraFin, agenda.horaFin)
+
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .setNegativeButton("Cancelar", null)
@@ -520,6 +557,12 @@ class GestionAgendaActivity : AppCompatActivity() {
             val horaFin = parsearHora(etHoraFin.text.toString().trim(), agenda.horaFin)
             val duracionMins = etDuracionCita.text.toString().toIntOrNull() ?: agenda.duracionCita
 
+            val errorHorario = validarHorario(horaInicio, horaFin, duracionMins)
+            if (errorHorario != null) {
+                Toast.makeText(this, errorHorario, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val agendaModificada = agenda.copy(
                 diasSemana = diasSeleccionados,
                 horaInicio = horaInicio,
@@ -541,6 +584,24 @@ class GestionAgendaActivity : AppCompatActivity() {
                 Toast.makeText(this, "Error al modificar la agenda", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun configurarHoraPicker(et: EditText, porDefecto: LocalTime) {
+        et.isFocusable = false
+        et.isClickable = true
+        et.setOnClickListener {
+            val actual = parsearHora(et.text.toString().trim(), porDefecto)
+            TimePickerDialog(this, { _, hora, minuto ->
+                et.setText(LocalTime.of(hora, minuto).toString())
+            }, actual.hour, actual.minute, true).show()
+        }
+    }
+
+    private fun validarHorario(inicio: LocalTime, fin: LocalTime, duracionMins: Int): String? = when {
+        duracionMins <= 0 -> "La duración debe ser mayor a 0 minutos"
+        !fin.isAfter(inicio) -> "La hora de fin debe ser posterior a la hora de inicio"
+        inicio.plusMinutes(duracionMins.toLong()) > fin -> "El horario no alcanza para un turno"
+        else -> null
     }
 
     private fun normalizarTexto(texto: String): String {
