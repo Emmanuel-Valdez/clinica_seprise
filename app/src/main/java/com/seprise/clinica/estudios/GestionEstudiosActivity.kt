@@ -1,11 +1,13 @@
 package com.seprise.clinica.estudios
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -23,6 +25,7 @@ import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
 import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Estudio
+import com.seprise.clinica.models.Paciente
 import com.seprise.clinica.models.Servicio
 import java.text.Normalizer
 import java.time.LocalDate
@@ -140,11 +143,27 @@ class GestionEstudiosActivity : AppCompatActivity() {
 
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_cargar_estudio, null)
 
-        val spinnerPaciente = dialogView.findViewById<Spinner>(R.id.spinner_paciente_estudio)
-        val listaPacientesStr = AppData.PACIENTES.map { "ID ${it.id}: ${it.fullName} (DNI ${it.dni})" }
-        val adapterPaciente = ArrayAdapter(this, android.R.layout.simple_spinner_item, listaPacientesStr)
-        adapterPaciente.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerPaciente.adapter = adapterPaciente
+        val actvPaciente = dialogView.findViewById<AutoCompleteTextView>(R.id.actv_paciente_estudio)
+        val pacientesActivos = AppData.PACIENTES.filter { it.activo }
+        val pacientesInfoList = pacientesActivos.map { "${it.fullName} (DNI: ${it.dni})" }
+
+        val adapterPaciente = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, pacientesInfoList)
+        actvPaciente.setAdapter(adapterPaciente)
+        actvPaciente.threshold = 1
+
+        var pacienteSeleccionado: Paciente? = null
+        actvPaciente.setOnItemClickListener { parent, _, position, _ ->
+            val seleccion = parent.getItemAtPosition(position) as String
+            pacienteSeleccionado = pacientesActivos.find { "${it.fullName} (DNI: ${it.dni})" == seleccion }
+        }
+
+        actvPaciente.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                pacienteSeleccionado = null
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         val spinnerTipo = dialogView.findViewById<Spinner>(R.id.spinner_tipo_estudio)
         val listaTipos = listOf(
@@ -161,8 +180,22 @@ class GestionEstudiosActivity : AppCompatActivity() {
         val etHora = dialogView.findViewById<EditText>(R.id.et_hora_estudio)
         val etObservaciones = dialogView.findViewById<EditText>(R.id.et_observaciones_estudio)
 
-        etFecha.setText(LocalDate.now().toString())
+        val fechaInicial = LocalDate.now()
+        etFecha.setText(fechaInicial.toString())
         etHora.setText(LocalTime.now().withSecond(0).withNano(0).toString())
+
+        etFecha.isFocusable = false
+        etFecha.isClickable = true
+        etFecha.setOnClickListener {
+            val base = try { LocalDate.parse(etFecha.text.toString().trim()) } catch (e: Exception) { fechaInicial }
+            DatePickerDialog(
+                this,
+                { _, anio, mes, dia -> etFecha.setText(LocalDate.of(anio, mes + 1, dia).toString()) },
+                base.year,
+                base.monthValue - 1,
+                base.dayOfMonth
+            ).show()
+        }
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -173,9 +206,13 @@ class GestionEstudiosActivity : AppCompatActivity() {
         dialog.show()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            val pacienteSeleccionado = AppData.PACIENTES.getOrNull(spinnerPaciente.selectedItemPosition)
-            if (pacienteSeleccionado == null) {
-                Toast.makeText(this, "Seleccione un paciente válido", Toast.LENGTH_SHORT).show()
+            val textoIngresado = actvPaciente.text.toString().trim()
+            val paciente = pacienteSeleccionado ?: pacientesActivos.find {
+                "${it.fullName} (DNI: ${it.dni})" == textoIngresado || normalizarTexto(it.fullName) == normalizarTexto(textoIngresado)
+            }
+
+            if (paciente == null) {
+                Toast.makeText(this, "Seleccione un paciente válido de la lista", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -201,7 +238,7 @@ class GestionEstudiosActivity : AppCompatActivity() {
             val nuevoEstudio = Estudio(
                 id = (AppData.ESTUDIOS.maxOfOrNull { it.id } ?: 0) + 1,
                 nombre = tipoEstudio,
-                pacienteId = pacienteSeleccionado.id,
+                pacienteId = paciente.id,
                 fecha = fecha,
                 hora = hora,
                 observaciones = observaciones
@@ -209,7 +246,7 @@ class GestionEstudiosActivity : AppCompatActivity() {
 
             val creado = EstudiosManager.crearEstudio(nuevoEstudio)
             if (creado) {
-                Toast.makeText(this, "Estudio cargado con éxito para ${pacienteSeleccionado.fullName}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Estudio cargado con éxito para ${paciente.fullName}", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
                 cargarEstudios(etBuscarEstudio.text.toString())
             } else {

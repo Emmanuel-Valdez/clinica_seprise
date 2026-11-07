@@ -26,7 +26,32 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="12dp" />
 
-    <!-- RadioGroup Circuito -->
+    <!-- RadioGroup Admin: Pacientes / Médicos -->
+    <RadioGroup
+        android:id="@+id/rg_filtro_turnos_admin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:layout_marginBottom="12dp">
+
+        <RadioButton
+            android:id="@+id/rb_turnos_pacientes"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Pacientes"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/rb_turnos_medicos"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Médicos" />
+    </RadioGroup>
+
+    <!-- RadioGroup Non-Admin: Circuito -->
     <RadioGroup
         android:id="@+id/rg_circuito_turnos"
         android:layout_width="match_parent"
@@ -54,7 +79,7 @@
         android:id="@+id/et_buscar_medico"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:hint="Buscar por nombre o servicio..."
+        android:hint="Buscar..."
         android:textColorHint="@color/seprise_placeholder"
         android:textColor="@color/seprise_ink"
         android:paddingHorizontal="14dp"

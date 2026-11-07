@@ -27,10 +27,16 @@
             android:textStyle="bold"
             android:textColor="@color/seprise_ink" />
 
-        <Spinner
-            android:id="@+id/spinner_paciente_estudio"
+        <AutoCompleteTextView
+            android:id="@+id/actv_paciente_estudio"
             android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:hint="Buscar por nombre o DNI de paciente..."
+            android:completionThreshold="1"
+            android:paddingHorizontal="12dp"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/seprise_ink"
+            android:textColorHint="@color/seprise_placeholder"
             android:layout_marginBottom="12dp" />
 
         <!-- Seleccionar Estudio / Servicio -->
@@ -61,6 +67,9 @@
             android:layout_height="48dp"
             android:hint="Ej: 2025-06-15"
             android:inputType="date"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/seprise_ink"
             android:layout_marginBottom="12dp" />
 
         <!-- Hora -->
@@ -77,6 +86,9 @@
             android:layout_height="48dp"
             android:hint="Ej: 10:00"
             android:inputType="time"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/seprise_ink"
             android:layout_marginBottom="12dp" />
 
         <!-- Observaciones / Informe -->
@@ -94,6 +106,9 @@
             android:minLines="2"
             android:hint="Observaciones o indicaciones adicionales..."
             android:inputType="textMultiLine"
+            android:background="@drawable/bg_input"
+            android:padding="12dp"
+            android:textColor="@color/seprise_ink"
             android:layout_marginBottom="12dp" />
 
     </LinearLayout>
