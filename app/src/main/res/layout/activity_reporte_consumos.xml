@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/seprise_bg"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tv_titulo_reporte"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Consumos por Prestación"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@color/seprise_ink" />
+
+    <RadioGroup
+        android:id="@+id/rg_filtro_tipo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp">
+
+        <RadioButton
+            android:id="@+id/rb_todos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Todos"
+            android:textSize="13sp"
+            android:textColor="@color/seprise_ink"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/rb_atenciones"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Atenciones"
+            android:textSize="13sp"
+            android:textColor="@color/seprise_ink"
+            android:layout_marginStart="12dp" />
+
+        <RadioButton
+            android:id="@+id/rb_estudios"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Estudios"
+            android:textSize="13sp"
+            android:textColor="@color/seprise_ink"
+            android:layout_marginStart="12dp" />
+    </RadioGroup>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/container_consumos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+</LinearLayout>

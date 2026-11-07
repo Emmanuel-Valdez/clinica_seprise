@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Filter
 import android.widget.LinearLayout
@@ -21,8 +22,10 @@ import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.SessionState
 import com.seprise.clinica.models.Atencion
 import com.seprise.clinica.models.EstadoTurno
+import com.seprise.clinica.models.Insumo
 import com.seprise.clinica.models.Paciente
 import com.seprise.clinica.models.Turno
+import com.seprise.clinica.insumos.InsumosManager
 import com.seprise.clinica.turnos.TurnosManager
 import java.text.Normalizer
 import java.time.LocalDate
@@ -205,6 +208,41 @@ class AtencionActivity : com.seprise.clinica.shell.BaseNavActivity() {
 
         dialog.show()
 
+        val cbSinInsumos = dialogView.findViewById<CheckBox>(R.id.cb_sin_insumos)
+        val containerInsumos = dialogView.findViewById<LinearLayout>(R.id.container_insumos_atencion)
+        val insumosActivos = AppData.INSUMOS.filter { it.activo }
+        val insumoRows = mutableListOf<Pair<CheckBox, EditText>>()
+
+        for (insumo in insumosActivos) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setPadding(8, 4, 8, 4)
+                gravity = android.view.Gravity.CENTER_VERTICAL
+            }
+            val cb = CheckBox(this).apply {
+                text = insumo.nombre
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            val etCantidad = EditText(this).apply {
+                layoutParams = LinearLayout.LayoutParams(100, LinearLayout.LayoutParams.WRAP_CONTENT)
+                inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                setText("1")
+                hint = "Cant"
+                textSize = 13f
+            }
+            row.addView(cb)
+            row.addView(etCantidad)
+            containerInsumos.addView(row)
+            insumoRows.add(cb to etCantidad)
+        }
+
+        cbSinInsumos.setOnCheckedChangeListener { _, isChecked ->
+            insumoRows.forEach { (cb, et) ->
+                cb.isEnabled = !isChecked
+                et.isEnabled = !isChecked
+            }
+        }
+
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val textoIngresado = actvPaciente.text.toString().trim()
             val paciente = pacienteSeleccionado ?: pacientes.find {
@@ -243,6 +281,21 @@ class AtencionActivity : com.seprise.clinica.shell.BaseNavActivity() {
                 }
             }
 
+            val insumosSeleccionados = mutableListOf<Insumo>()
+            if (!cbSinInsumos.isChecked) {
+                for ((cb, et) in insumoRows) {
+                    if (cb.isChecked) {
+                        val cantidad = et.text.toString().toIntOrNull() ?: 1
+                        val insumo = insumosActivos.find { it.nombre == cb.text } ?: continue
+                        insumosSeleccionados.add(insumo.copy(cantidad = cantidad))
+                    }
+                }
+                if (insumosSeleccionados.isEmpty()) {
+                    Toast.makeText(this, "Debe seleccionar insumos o marcar 'sin insumos'", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+            }
+
             val nuevaAtencion = Atencion(
                 id = (AppData.ATENCIONES.maxOfOrNull { it.id } ?: 0) + 1,
                 medicoId = medicoIdLogueado,
@@ -251,6 +304,7 @@ class AtencionActivity : com.seprise.clinica.shell.BaseNavActivity() {
                 fecha = LocalDate.now(),
                 hora = LocalTime.now(),
                 duracion = duracion,
+                insumos = insumosSeleccionados,
                 observaciones = etObservaciones.text.toString().trim(),
                 valorConsulta = valor,
                 diagnostico = diagnostico,
@@ -258,6 +312,9 @@ class AtencionActivity : com.seprise.clinica.shell.BaseNavActivity() {
             )
 
             if (AtencionManager.registrarAtencion(nuevaAtencion)) {
+                for (insumo in insumosSeleccionados) {
+                    InsumosManager.consumirInsumo(insumo.id, insumo.cantidad, nuevaAtencion.id, "atencion")
+                }
                 Toast.makeText(this, "Atención registrada con éxito para ${paciente.fullName}", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
                 cargarAtenciones(etBuscarAtencion.text.toString())

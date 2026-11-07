@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
@@ -20,8 +21,10 @@ import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
+import com.seprise.clinica.insumos.InsumosManager
 import com.seprise.clinica.models.EstadoEstudio
 import com.seprise.clinica.models.Estudio
+import com.seprise.clinica.models.Insumo
 import com.seprise.clinica.models.Paciente
 import com.seprise.clinica.models.Servicio
 import java.text.Normalizer
@@ -265,6 +268,44 @@ class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
 
         dialog.show()
 
+        val cbSinInsumos = dialogView.findViewById<CheckBox>(R.id.cb_sin_insumos_estudio)
+        val containerInsumos = dialogView.findViewById<LinearLayout>(R.id.container_insumos_estudio)
+        val insumosActivos = AppData.INSUMOS.filter { it.activo }
+        val insumoRows = mutableListOf<Pair<CheckBox, EditText>>()
+
+        for (insumo in insumosActivos) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setPadding(8, 4, 8, 4)
+                gravity = android.view.Gravity.CENTER_VERTICAL
+            }
+            val cb = CheckBox(this).apply {
+                text = insumo.nombre
+                setTextColor(ContextCompat.getColor(this@GestionEstudiosActivity, R.color.seprise_ink))
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            val etCantidad = EditText(this).apply {
+                hint = "Cant"
+                inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                setText("1")
+                layoutParams = LinearLayout.LayoutParams(100, LinearLayout.LayoutParams.WRAP_CONTENT)
+                setBackgroundResource(R.drawable.bg_input)
+                setPadding(8, 0, 8, 0)
+                textSize = 13f
+            }
+            row.addView(cb)
+            row.addView(etCantidad)
+            containerInsumos.addView(row)
+            insumoRows.add(Pair(cb, etCantidad))
+        }
+
+        cbSinInsumos.setOnCheckedChangeListener { _, isChecked ->
+            for ((cb, _) in insumoRows) {
+                cb.isEnabled = !isChecked
+                if (isChecked) cb.isChecked = false
+            }
+        }
+
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val textoIngresado = actvPaciente.text.toString().trim()
             val paciente = pacienteSeleccionado ?: pacientesActivos.find {
@@ -302,19 +343,41 @@ class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
                 return@setOnClickListener
             }
 
+            val seleccionados = mutableListOf<Pair<Insumo, Int>>()
+            if (!cbSinInsumos.isChecked) {
+                for ((cb, et) in insumoRows) {
+                    if (cb.isChecked) {
+                        val nombre = cb.text.toString()
+                        val insumo = insumosActivos.find { it.nombre == nombre } ?: continue
+                        val cantidad = et.text.toString().toIntOrNull() ?: 1
+                        seleccionados.add(Pair(insumo, cantidad))
+                    }
+                }
+                if (seleccionados.isEmpty()) {
+                    Toast.makeText(this, "Debe seleccionar insumos o marcar 'sin insumos'", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+            }
+
+            val estudioId = (AppData.ESTUDIOS.maxOfOrNull { it.id } ?: 0) + 1
+
             val nuevoEstudio = Estudio(
-                id = (AppData.ESTUDIOS.maxOfOrNull { it.id } ?: 0) + 1,
+                id = estudioId,
                 nombre = tipoEstudio,
                 pacienteId = paciente.id,
                 fecha = fecha,
                 hora = hora,
                 observaciones = observaciones,
                 nroOrden = nroOrden,
-                autorizacionOS = autorizacionOS
+                autorizacionOS = autorizacionOS,
+                insumos = seleccionados.map { it.first }
             )
 
             val creado = EstudiosManager.crearEstudio(nuevoEstudio)
             if (creado) {
+                for ((insumo, cantidad) in seleccionados) {
+                    InsumosManager.consumirInsumo(insumo.id, cantidad, estudioId, "estudio")
+                }
                 Toast.makeText(this, "Estudio cargado con éxito para ${paciente.fullName}", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
                 cargarEstudios(etBuscarEstudio.text.toString())

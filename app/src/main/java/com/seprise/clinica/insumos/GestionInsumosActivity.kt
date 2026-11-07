@@ -1,13 +1,17 @@
 package com.seprise.clinica.insumos
 
+import android.graphics.Paint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -16,6 +20,8 @@ import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.models.Insumo
 import java.text.Normalizer
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 class GestionInsumosActivity : com.seprise.clinica.shell.BaseNavActivity() {
 
@@ -24,13 +30,23 @@ class GestionInsumosActivity : com.seprise.clinica.shell.BaseNavActivity() {
 
     private lateinit var containerInsumos: LinearLayout
     private lateinit var etBuscarInsumo: EditText
+    private lateinit var cbSoloActivos: CheckBox
 
     override fun onContentViewCreated(view: View) {
         containerInsumos = view.findViewById(R.id.container_insumos)
         etBuscarInsumo = view.findViewById(R.id.et_buscar_insumo)
+        cbSoloActivos = view.findViewById(R.id.cb_solo_activos)
 
         view.findViewById<Button>(R.id.btn_agregar_insumo).setOnClickListener {
             abrirModalAgregarInsumo()
+        }
+
+        view.findViewById<Button>(R.id.btn_ver_consumos).setOnClickListener {
+            startActivity(android.content.Intent(this, ReporteConsumosActivity::class.java))
+        }
+
+        cbSoloActivos.setOnCheckedChangeListener { _, _ ->
+            cargarInsumos(etBuscarInsumo.text.toString())
         }
 
         etBuscarInsumo.addTextChangedListener(object : TextWatcher {
@@ -45,6 +61,7 @@ class GestionInsumosActivity : com.seprise.clinica.shell.BaseNavActivity() {
     }
 
     private fun cargarInsumos(filtro: String = "") {
+        InsumosManager.actualizarEstadoVencimiento()
         containerInsumos.removeAllViews()
 
         val filtroNorm = normalizarTexto(filtro)
@@ -56,19 +73,49 @@ class GestionInsumosActivity : com.seprise.clinica.shell.BaseNavActivity() {
             }
         }
 
-        if (insumosFiltrados.isEmpty()) {
+        val insumosMostrar = if (cbSoloActivos.isChecked) {
+            insumosFiltrados.filter { it.activo }
+        } else {
+            insumosFiltrados
+        }
+
+        if (insumosMostrar.isEmpty()) {
             mostrarMensajeVacio("No se encontraron insumos en el inventario")
             return
         }
 
-        for (insumo in insumosFiltrados) {
+        for (insumo in insumosMostrar) {
             val item = LayoutInflater.from(this).inflate(R.layout.item_insumo, containerInsumos, false)
 
             val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_insumo)
             val tvCantidad = item.findViewById<TextView>(R.id.tv_cantidad_insumo)
+            val tvEstado = item.findViewById<TextView>(R.id.tv_estado_insumo)
+            val btnConsumir = item.findViewById<Button>(R.id.btn_consumir_insumo)
 
             tvNombre.text = insumo.nombre
             tvCantidad.text = "Stock: ${insumo.cantidad}"
+
+            val hoy = LocalDate.now()
+            val diasRestantes = ChronoUnit.DAYS.between(hoy, insumo.fechaVencimiento)
+
+            if (!insumo.activo) {
+                tvEstado.text = "VENCIDO"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_error))
+                tvEstado.visibility = View.VISIBLE
+                tvNombre.paintFlags = tvNombre.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                btnConsumir.isEnabled = false
+                btnConsumir.alpha = 0.4f
+            } else if (diasRestantes <= 30) {
+                tvEstado.text = "PRÓXIMO A VENCER"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_warn))
+                tvEstado.visibility = View.VISIBLE
+            } else {
+                tvEstado.visibility = View.GONE
+            }
+
+            btnConsumir.setOnClickListener {
+                abrirModalConsumirInsumo(insumo)
+            }
 
             item.setOnClickListener {
                 abrirModalEditarInsumo(insumo)
@@ -158,6 +205,69 @@ class GestionInsumosActivity : com.seprise.clinica.shell.BaseNavActivity() {
                 }
             }
             .show()
+    }
+
+    private fun abrirModalConsumirInsumo(insumo: Insumo) {
+        if (!insumo.activo) {
+            Toast.makeText(this, "No se puede consumir un insumo vencido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_consumir_insumo, null)
+
+        dialogView.findViewById<TextView>(R.id.tv_insumo_info).text = "${insumo.nombre} · Stock actual: ${insumo.cantidad}"
+
+        val etCantidad = dialogView.findViewById<EditText>(R.id.et_cantidad_consumo)
+        val rgTipo = dialogView.findViewById<RadioGroup>(R.id.rg_tipo_prestacion)
+        val etPrestacionId = dialogView.findViewById<EditText>(R.id.et_prestacion_id)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Consumir", null)
+            .create()
+
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val cantidad = etCantidad.text.toString().toIntOrNull() ?: 0
+            val prestacionId = etPrestacionId.text.toString().toIntOrNull() ?: 0
+
+            if (cantidad <= 0) {
+                Toast.makeText(this, "La cantidad debe ser mayor a 0", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (rgTipo.checkedRadioButtonId == -1) {
+                Toast.makeText(this, "Seleccione el tipo de prestación", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (prestacionId <= 0) {
+                Toast.makeText(this, "Ingrese un ID de prestación válido", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val tipoPrestacion = if (dialogView.findViewById<RadioButton>(rgTipo.checkedRadioButtonId).id == R.id.rb_atencion) {
+                "atencion"
+            } else {
+                "estudio"
+            }
+
+            val resultado = InsumosManager.consumirInsumo(insumo.id, cantidad, prestacionId, tipoPrestacion)
+            if (resultado) {
+                val insumoActualizado = InsumosManager.obtenerInsumoPorId(insumo.id)
+                if (insumoActualizado != null && insumoActualizado.cantidad < 0) {
+                    Toast.makeText(this, "Atención: stock negativo (${insumoActualizado.cantidad})", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "Consumo registrado", Toast.LENGTH_SHORT).show()
+                }
+                dialog.dismiss()
+                cargarInsumos(etBuscarInsumo.text.toString())
+            } else {
+                Toast.makeText(this, "Error al registrar el consumo", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun normalizarTexto(texto: String): String {

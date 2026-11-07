@@ -149,5 +149,33 @@
             android:textColor="@color/seprise_ink"
             android:layout_marginBottom="12dp" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Insumos consumidos:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink"
+            android:layout_marginTop="4dp" />
+
+        <CheckBox
+            android:id="@+id/cb_sin_insumos_estudio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sin insumos"
+            android:textColor="@color/seprise_ink"
+            android:layout_marginBottom="8dp" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/container_insumos_estudio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
     </LinearLayout>
 </ScrollView>
