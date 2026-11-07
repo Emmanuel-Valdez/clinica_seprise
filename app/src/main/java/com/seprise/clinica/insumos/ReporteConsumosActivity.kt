@@ -94,6 +94,4 @@ class ReporteConsumosActivity : com.seprise.clinica.shell.BaseNavActivity() {
             containerConsumos.addView(card)
         }
     }
-
-    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 }

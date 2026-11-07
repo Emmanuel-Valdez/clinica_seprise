@@ -1,20 +1,15 @@
 package com.seprise.clinica.pacientes
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
-import com.seprise.clinica.auth.LoginActivity
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
+import com.seprise.clinica.shell.BaseNavActivity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -25,22 +20,14 @@ import java.util.Locale
  * Cada cambio se registra en [PerfilPacienteStore.auditoria] para que un administrativo
  * lo analice más adelante (fuera del alcance de CU01); el paciente no ve el log.
  */
-class PerfilPacienteActivity : AppCompatActivity() {
+class PerfilPacienteActivity : BaseNavActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_perfil_paciente)
-        val root = findViewById<View>(R.id.cu01_root)
-        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
+    override fun getContentLayoutId() = R.layout.activity_perfil_paciente
+    override fun getActiveNavItemKey() = ""
 
+    override fun onContentViewCreated(view: View) {
         val usuario = SessionState.userId
         if (SessionState.rol != Rol.PACIENTE || usuario == null) {
-            startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
         }
@@ -48,15 +35,15 @@ class PerfilPacienteActivity : AppCompatActivity() {
         val perfil = PerfilPacienteStore.obtener(usuario)
         val noEditable = getString(R.string.cu01_perfil_no_editable)
 
-        findViewById<TextView>(R.id.cu01_perfil_usuario).text = usuario
-        findViewById<TextView>(R.id.cu01_perfil_hc).text = "${perfil.hc}  $noEditable"
-        findViewById<TextView>(R.id.cu01_perfil_empadronamiento).text = "${perfil.empadronamiento}  $noEditable"
+        view.findViewById<TextView>(R.id.cu01_perfil_usuario).text = usuario
+        view.findViewById<TextView>(R.id.cu01_perfil_hc).text = "${perfil.hc}  $noEditable"
+        view.findViewById<TextView>(R.id.cu01_perfil_empadronamiento).text = "${perfil.empadronamiento}  $noEditable"
 
-        val telefono = findViewById<EditText>(R.id.cu01_perfil_telefono).apply { setText(perfil.telefono) }
-        val direccion = findViewById<EditText>(R.id.cu01_perfil_direccion).apply { setText(perfil.direccion) }
-        val password = findViewById<EditText>(R.id.cu01_perfil_password)
+        val telefono = view.findViewById<EditText>(R.id.cu01_perfil_telefono).apply { setText(perfil.telefono) }
+        val direccion = view.findViewById<EditText>(R.id.cu01_perfil_direccion).apply { setText(perfil.direccion) }
+        val password = view.findViewById<EditText>(R.id.cu01_perfil_password)
 
-        findViewById<Button>(R.id.cu01_perfil_btn_guardar).setOnClickListener {
+        view.findViewById<Button>(R.id.cu01_perfil_btn_guardar).setOnClickListener {
             val tel = telefono.text.toString().trim()
             val dir = direccion.text.toString().trim()
             if (tel != perfil.telefono) {
@@ -69,7 +56,6 @@ class PerfilPacienteActivity : AppCompatActivity() {
             }
             val nueva = password.text.toString()
             if (nueva.isNotEmpty() && nueva != perfil.password) {
-                // No se registra el valor de la contraseña (secreto); solo se marca el cambio.
                 registrarAuditoria(usuario, getString(R.string.cu01_perfil_label_password), "(oculta)", "(oculta)")
                 perfil.password = nueva
             }

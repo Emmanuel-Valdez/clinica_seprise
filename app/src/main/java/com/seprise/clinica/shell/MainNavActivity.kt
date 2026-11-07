@@ -2,182 +2,54 @@ package com.seprise.clinica.shell
 
 import android.content.Intent
 import android.graphics.Typeface
-import android.os.Bundle
-import android.util.TypedValue
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.ViewGroup
 import com.seprise.clinica.R
 import com.seprise.clinica.agenda.GestionAgendaActivity
 import com.seprise.clinica.atencion.AtencionActivity
-import com.seprise.clinica.auth.LoginActivity
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.estudios.GestionEstudiosActivity
 import com.seprise.clinica.honorarios.HonorariosActivity
 import com.seprise.clinica.insumos.GestionInsumosActivity
 import com.seprise.clinica.models.EstadoTurno
 import com.seprise.clinica.models.Turno
-import com.seprise.clinica.pacientes.GestionPacientesActivity
 import com.seprise.clinica.pacientes.PerfilPacienteActivity
-import com.seprise.clinica.turnos.GestionTurnosActivity
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-class MainNavActivity : AppCompatActivity() {
+class MainNavActivity : BaseNavActivity() {
 
-    private data class Modulo(val clave: String, @param:StringRes val nombre: Int, val clase: Class<*>)
+    override fun getContentLayoutId() = R.layout.contenido_home
+    override fun getActiveNavItemKey() = "inicio"
 
     private data class FilaHome(val texto: String, val color: Int? = null)
 
-    private val pacientes = Modulo("pacientes", R.string.cu01_nav_pacientes, GestionPacientesActivity::class.java)
-    private val agenda = Modulo("agenda", R.string.cu01_nav_agenda, GestionAgendaActivity::class.java)
-    private val turnos = Modulo("turnos", R.string.cu01_nav_turnos, GestionTurnosActivity::class.java)
-    private val atencion = Modulo("atencion", R.string.cu01_nav_atencion, AtencionActivity::class.java)
-    private val estudios = Modulo("estudios", R.string.cu01_nav_estudios, GestionEstudiosActivity::class.java)
-    private val insumos = Modulo("insumos", R.string.cu01_nav_insumos, GestionInsumosActivity::class.java)
-    private val honorarios = Modulo("honorarios", R.string.cu01_nav_honorarios, HonorariosActivity::class.java)
+    private var homeContenido: LinearLayout? = null
 
-    private lateinit var contenedorItems: LinearLayout
-    private lateinit var contenedorContenido: FrameLayout
-    private var itemInicio: TextView? = null
-    private var activo: TextView? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_main_nav)
-        val root = findViewById<View>(R.id.cu01_root)
-        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
-
-        val rol = SessionState.rol
-        if (rol == null) {
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
-            return
-        }
-
-        contenedorContenido = findViewById(R.id.cu01_contenido_container)
-        contenedorItems = findViewById(R.id.cu01_nav_items)
-
-        findViewById<TextView>(R.id.txt_nombre_usuario)?.text = obtenerNombrePersonaLogueada()
-
-        findViewById<ImageView>(R.id.btn_home_logo).setOnClickListener {
-            itemInicio?.let { marcarActivo(it) }
-            mostrarPantallaInicio()
-        }
-
-        findViewById<android.widget.Button>(R.id.cu01_btn_perfil).apply {
-            visibility = if (rol == Rol.PACIENTE) View.VISIBLE else View.GONE
-            setOnClickListener { startActivity(Intent(this@MainNavActivity, PerfilPacienteActivity::class.java)) }
-        }
-
-        findViewById<android.widget.Button>(R.id.cu01_btn_logout).setOnClickListener {
-            SessionState.logout()
-            val intent = Intent(this, LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
-        }
-
-        armarItems(modulosDe(rol))
-        mostrarPantallaInicio()
+    override fun onContentViewCreated(view: View) {
+        homeContenido = view.findViewById(R.id.home_contenido)
+        SessionState.rol?.let { renderHome(it) }
     }
 
     override fun onResume() {
         super.onResume()
-        if (activo == itemInicio) {
-            SessionState.rol?.let { renderHome(it) }
-        }
-    }
-
-    private fun modulosDe(rol: Rol): List<Modulo> = when (rol) {
-        Rol.ADMINISTRATIVO -> listOf(pacientes, agenda, turnos, estudios, insumos, honorarios)
-        Rol.MEDICO -> listOf(atencion, agenda, estudios)
-        Rol.PACIENTE -> listOf(turnos, estudios)
-    }
-
-    private fun armarItems(modulos: List<Modulo>) {
-        contenedorItems.removeAllViews()
-        val pad = dp(12)
-
-        val inicio = TextView(this).apply {
-            text = "Inicio"
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.text_nav))
-            setPadding(pad, pad, pad, pad)
-            setTextColor(getColor(R.color.seprise_muted))
-            isClickable = true
-            setOnClickListener {
-                marcarActivo(this)
-                mostrarPantallaInicio()
-            }
-        }
-        itemInicio = inicio
-        contenedorItems.addView(inicio)
-        marcarActivo(inicio)
-
-        modulos.forEach { modulo ->
-            val item = TextView(this).apply {
-                setText(modulo.nombre)
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.text_nav))
-                setPadding(pad, pad, pad, pad)
-                setTextColor(getColor(R.color.seprise_muted))
-                isClickable = true
-                setOnClickListener {
-                    marcarActivo(this)
-                    abrirModulo(modulo)
-                }
-            }
-            contenedorItems.addView(item)
-        }
-    }
-
-    private fun marcarActivo(item: TextView) {
-        activo?.apply {
-            setBackgroundResource(0)
-            setTextColor(getColor(R.color.seprise_muted))
-        }
-        item.setBackgroundResource(R.drawable.bg_nav_active)
-        item.setTextColor(getColor(R.color.seprise_nav_text))
-        activo = item
-    }
-
-    private fun mostrarPantallaInicio() {
-        contenedorContenido.removeAllViews()
-        val homeView = LayoutInflater.from(this).inflate(R.layout.activity_main_nav, contenedorContenido, false)
-        val homeLayout = homeView.findViewById<View>(R.id.layout_inicio_home)
-        if (homeLayout != null) {
-            (homeLayout.parent as? ViewGroup)?.removeView(homeLayout)
-            contenedorContenido.addView(homeLayout)
-        }
         SessionState.rol?.let { renderHome(it) }
     }
 
-    private fun abrirModulo(modulo: Modulo) {
-        startActivity(Intent(this, modulo.clase))
+    private fun abrirModulo(clase: Class<*>) {
+        startActivity(Intent(this, clase))
     }
 
     private fun renderHome(rol: Rol) {
-        val contenedor = findViewById<LinearLayout>(R.id.home_contenido) ?: return
+        val contenedor = homeContenido ?: return
         contenedor.removeAllViews()
         val hoy = LocalDate.now()
         when (rol) {
@@ -198,7 +70,7 @@ class MainNavActivity : AppCompatActivity() {
             turnosHoy.take(5).map { FilaHome(descripcionTurno(it, incluirMedico = true), colorEstado(it.estado)) },
             "Sin turnos programados para hoy.",
             "Ver agendas"
-        ) { abrirModulo(agenda) }
+        ) { abrirModulo(GestionAgendaActivity::class.java) }
 
         val ingresosEstimados = turnosHoy.size * 15000
         agregarKpis(
@@ -210,12 +82,12 @@ class MainNavActivity : AppCompatActivity() {
             )
         )
 
-        agregarAccionPrincipal(contenedor, "Cargar agenda médica") { abrirModulo(agenda) }
+        agregarAccionPrincipal(contenedor, "Cargar agenda médica") { abrirModulo(GestionAgendaActivity::class.java) }
 
         val acciones: List<Pair<String, () -> Unit>> = listOf(
-            "Cargar agenda" to { abrirModulo(agenda) },
-            "Nuevo estudio" to { abrirModulo(estudios) },
-            "Nuevo insumo" to { abrirModulo(insumos) }
+            "Cargar agenda" to { abrirModulo(GestionAgendaActivity::class.java) },
+            "Nuevo estudio" to { abrirModulo(GestionEstudiosActivity::class.java) },
+            "Nuevo insumo" to { abrirModulo(GestionInsumosActivity::class.java) }
         )
         agregarAccionesSecundarias(contenedor, acciones)
 
@@ -224,14 +96,14 @@ class MainNavActivity : AppCompatActivity() {
             FilaHome("${estudio.nombre} · ${paciente?.fullName ?: "Paciente"} · ${estudio.fecha.format(DateTimeFormatter.ofPattern("dd/MM"))}")
         }
         agregarTarjeta(contenedor, "Últimos estudios", estudiosRecientes, "Sin estudios registrados.", "Ver estudios") {
-            abrirModulo(estudios)
+            abrirModulo(GestionEstudiosActivity::class.java)
         }
 
         val stockBajo = AppData.INSUMOS.filter { it.cantidad < 20 }.sortedBy { it.cantidad }.take(3).map { insumo ->
             FilaHome("${insumo.nombre} · stock ${insumo.cantidad}", R.color.seprise_warn)
         }
         agregarTarjeta(contenedor, "Stock bajo", stockBajo, "Sin insumos bajo stock.", "Ver insumos") {
-            abrirModulo(insumos)
+            abrirModulo(GestionInsumosActivity::class.java)
         }
     }
 
@@ -251,7 +123,7 @@ class MainNavActivity : AppCompatActivity() {
             turnosHoy.take(5).map { FilaHome(descripcionTurno(it, incluirMedico = false), colorEstado(it.estado)) },
             "No tenés turnos para hoy.",
             "Ver agenda"
-        ) { abrirModulo(agenda) }
+        ) { abrirModulo(GestionAgendaActivity::class.java) }
 
         val atendidos = turnosHoy.count { it.estado == EstadoTurno.ATENDIDO }
         val estudiosDerivados = AppData.ESTUDIOS.count { estudio ->
@@ -266,7 +138,7 @@ class MainNavActivity : AppCompatActivity() {
             )
         )
 
-        agregarAccionPrincipal(contenedor, "Registrar atención") { abrirModulo(atencion) }
+        agregarAccionPrincipal(contenedor, "Registrar atención") { abrirModulo(AtencionActivity::class.java) }
     }
 
     private fun renderHomePaciente(contenedor: LinearLayout, hoy: LocalDate) {
@@ -284,7 +156,7 @@ class MainNavActivity : AppCompatActivity() {
             proximo?.let { listOf(FilaHome(descripcionTurnoPaciente(it), colorEstado(it.estado))) } ?: emptyList(),
             "No tenés turnos reservados.",
             "Ver turnos"
-        ) { abrirModulo(turnos) }
+        ) { abrirModulo(com.seprise.clinica.turnos.GestionTurnosActivity::class.java) }
 
         val activos = misTurnos.count { it.estado == EstadoTurno.RESERVADO && esFuturo(it) }
         agregarKpis(
@@ -295,11 +167,11 @@ class MainNavActivity : AppCompatActivity() {
             )
         )
 
-        agregarAccionPrincipal(contenedor, "Sacar turno") { abrirModulo(turnos) }
+        agregarAccionPrincipal(contenedor, "Sacar turno") { abrirModulo(com.seprise.clinica.turnos.GestionTurnosActivity::class.java) }
         agregarAccionesSecundarias(
             contenedor,
             listOf(
-                "Mis estudios" to { abrirModulo(estudios) },
+                "Mis estudios" to { abrirModulo(GestionEstudiosActivity::class.java) },
                 "Mi perfil" to { startActivity(Intent(this, PerfilPacienteActivity::class.java)) }
             )
         )
@@ -496,28 +368,4 @@ class MainNavActivity : AppCompatActivity() {
         "CLINICA_MEDICA" -> "Clínica médica"
         else -> formatearEnum(valor)
     }
-
-    private fun obtenerNombrePersonaLogueada(): String {
-        val id = SessionState.loggedPersonId
-        val rol = SessionState.rol
-        if (id != null && rol != null) {
-            when (rol) {
-                Rol.ADMINISTRATIVO -> {
-                    val admin = AppData.ADMINISTRADORES.find { it.id == id }
-                    if (admin != null) return "${admin.nombre} ${admin.apellido}"
-                }
-                Rol.MEDICO -> {
-                    val medico = AppData.MEDICOS.find { it.id == id }
-                    if (medico != null) return "${medico.nombre} ${medico.apellido}"
-                }
-                Rol.PACIENTE -> {
-                    val paciente = AppData.PACIENTES.find { it.id == id }
-                    if (paciente != null) return "${paciente.nombre} ${paciente.apellido}"
-                }
-            }
-        }
-        return SessionState.userId ?: ""
-    }
-
-    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 }

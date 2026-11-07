@@ -3,18 +3,20 @@ package com.seprise.clinica.shell
 import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.ImageViewCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.auth.LoginActivity
 import com.seprise.clinica.core.AppData
@@ -25,11 +27,11 @@ import com.seprise.clinica.pacientes.PerfilPacienteActivity
 
 abstract class BaseNavActivity : AppCompatActivity() {
 
-    protected data class NavItem(val clave: String, @StringRes val nombre: Int, val activityClass: Class<*>)
+    protected data class NavItem(val clave: String, @StringRes val nombre: Int, @DrawableRes val icono: Int, val activityClass: Class<*>)
 
     private lateinit var contenedorContenido: FrameLayout
     private lateinit var contenedorItems: LinearLayout
-    private var activo: TextView? = null
+    private var activo: LinearLayout? = null
 
     protected abstract fun getContentLayoutId(): Int
     protected abstract fun getActiveNavItemKey(): String
@@ -64,12 +66,12 @@ abstract class BaseNavActivity : AppCompatActivity() {
             finish()
         }
 
-        findViewById<Button>(R.id.cu01_btn_perfil).apply {
+        findViewById<android.widget.Button>(R.id.cu01_btn_perfil).apply {
             visibility = if (rol == Rol.PACIENTE) View.VISIBLE else View.GONE
             setOnClickListener { startActivity(Intent(this@BaseNavActivity, PerfilPacienteActivity::class.java)) }
         }
 
-        findViewById<Button>(R.id.cu01_btn_logout).setOnClickListener {
+        findViewById<android.widget.Button>(R.id.cu01_btn_logout).setOnClickListener {
             SessionState.logout()
             val intent = Intent(this, LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -95,7 +97,7 @@ abstract class BaseNavActivity : AppCompatActivity() {
     protected fun marcarActivoPorClave(clave: String) {
         for (i in 0 until contenedorItems.childCount) {
             val child = contenedorItems.getChildAt(i)
-            if (child is TextView && child.tag == clave) {
+            if (child is LinearLayout && child.tag == clave) {
                 resaltar(child)
                 return
             }
@@ -107,70 +109,96 @@ abstract class BaseNavActivity : AppCompatActivity() {
         marcarActivoPorClave(clave)
     }
 
-    private fun resaltar(item: TextView) {
+    private fun resaltar(item: LinearLayout) {
         activo?.apply {
             setBackgroundResource(0)
-            setTextColor(getColor(R.color.seprise_muted))
+            findViewById<TextView>(R.id.nav_text)?.setTextColor(getColor(R.color.seprise_muted))
+            findViewById<ImageView>(R.id.nav_icon)?.let { ImageViewCompat.setImageTintList(it, ContextCompat.getColorStateList(this@BaseNavActivity, R.color.seprise_muted)) }
         }
         item.setBackgroundResource(R.drawable.bg_nav_active)
-        item.setTextColor(getColor(R.color.seprise_nav_text))
+        item.findViewById<TextView>(R.id.nav_text)?.setTextColor(getColor(R.color.seprise_blue))
+        item.findViewById<ImageView>(R.id.nav_icon)?.let { ImageViewCompat.setImageTintList(it, ContextCompat.getColorStateList(this@BaseNavActivity, R.color.seprise_blue)) }
         activo = item
     }
 
     private fun modulosDe(rol: Rol): List<NavItem> = when (rol) {
         Rol.ADMINISTRATIVO -> listOf(
-            NavItem("pacientes", R.string.cu01_nav_pacientes, com.seprise.clinica.pacientes.GestionPacientesActivity::class.java),
-            NavItem("agenda", R.string.cu01_nav_agenda, com.seprise.clinica.agenda.GestionAgendaActivity::class.java),
-            NavItem("turnos", R.string.cu01_nav_turnos, com.seprise.clinica.turnos.GestionTurnosActivity::class.java),
-            NavItem("estudios", R.string.cu01_nav_estudios, com.seprise.clinica.estudios.GestionEstudiosActivity::class.java),
-            NavItem("insumos", R.string.cu01_nav_insumos, com.seprise.clinica.insumos.GestionInsumosActivity::class.java),
-            NavItem("honorarios", R.string.cu01_nav_honorarios, com.seprise.clinica.honorarios.HonorariosActivity::class.java)
+            NavItem("pacientes", R.string.cu01_nav_pacientes, R.drawable.ic_nav_pacientes, com.seprise.clinica.pacientes.GestionPacientesActivity::class.java),
+            NavItem("agenda", R.string.cu01_nav_agenda, R.drawable.ic_nav_agenda, com.seprise.clinica.agenda.GestionAgendaActivity::class.java),
+            NavItem("turnos", R.string.cu01_nav_turnos, R.drawable.ic_nav_turnos, com.seprise.clinica.turnos.GestionTurnosActivity::class.java),
+            NavItem("estudios", R.string.cu01_nav_estudios, R.drawable.ic_nav_estudios, com.seprise.clinica.estudios.GestionEstudiosActivity::class.java),
+            NavItem("insumos", R.string.cu01_nav_insumos, R.drawable.ic_nav_insumos, com.seprise.clinica.insumos.GestionInsumosActivity::class.java),
+            NavItem("honorarios", R.string.cu01_nav_honorarios, R.drawable.ic_nav_honorarios, com.seprise.clinica.honorarios.HonorariosActivity::class.java)
         )
         Rol.MEDICO -> listOf(
-            NavItem("atencion", R.string.cu01_nav_atencion, com.seprise.clinica.atencion.AtencionActivity::class.java),
-            NavItem("agenda", R.string.cu01_nav_agenda, com.seprise.clinica.agenda.GestionAgendaActivity::class.java),
-            NavItem("estudios", R.string.cu01_nav_estudios, com.seprise.clinica.estudios.GestionEstudiosActivity::class.java)
+            NavItem("atencion", R.string.cu01_nav_atencion, R.drawable.ic_nav_atencion, com.seprise.clinica.atencion.AtencionActivity::class.java),
+            NavItem("agenda", R.string.cu01_nav_agenda, R.drawable.ic_nav_agenda, com.seprise.clinica.agenda.GestionAgendaActivity::class.java),
+            NavItem("estudios", R.string.cu01_nav_estudios, R.drawable.ic_nav_estudios, com.seprise.clinica.estudios.GestionEstudiosActivity::class.java)
         )
         Rol.PACIENTE -> listOf(
-            NavItem("turnos", R.string.cu01_nav_turnos, com.seprise.clinica.turnos.GestionTurnosActivity::class.java),
-            NavItem("estudios", R.string.cu01_nav_estudios, com.seprise.clinica.estudios.GestionEstudiosActivity::class.java)
+            NavItem("turnos", R.string.cu01_nav_turnos, R.drawable.ic_nav_turnos, com.seprise.clinica.turnos.GestionTurnosActivity::class.java),
+            NavItem("estudios", R.string.cu01_nav_estudios, R.drawable.ic_nav_estudios, com.seprise.clinica.estudios.GestionEstudiosActivity::class.java)
         )
     }
 
     private fun armarItems(modulos: List<NavItem>) {
         contenedorItems.removeAllViews()
-        val pad = dp(12)
+        val padH = dp(10)
+        val padV = dp(4)
+        val iconSize = dp(20)
 
-        val inicio = TextView(this).apply {
-            text = "Inicio"
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.text_nav))
-            setPadding(pad, pad, pad, pad)
-            setTextColor(getColor(R.color.seprise_muted))
-            isClickable = true
-            tag = "inicio"
-            setOnClickListener {
+        val inicio = crearItemNav("Inicio", R.drawable.ic_nav_home, "inicio") {
+            if ("inicio" != getActiveNavItemKey()) {
                 startActivity(Intent(this@BaseNavActivity, MainNavActivity::class.java))
                 finish()
             }
         }
+        inicio.setPadding(padH, padV, padH, padV)
         contenedorItems.addView(inicio)
 
         modulos.forEach { item ->
-            val navItem = TextView(this).apply {
-                setText(item.nombre)
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.text_nav))
-                setPadding(pad, pad, pad, pad)
-                setTextColor(getColor(R.color.seprise_muted))
-                isClickable = true
-                tag = item.clave
-                setOnClickListener {
-                    if (item.clave != getActiveNavItemKey()) {
-                        startActivity(Intent(this@BaseNavActivity, item.activityClass))
-                    }
+            val navItem = crearItemNav(getString(item.nombre), item.icono, item.clave) {
+                if (item.clave != getActiveNavItemKey()) {
+                    startActivity(Intent(this@BaseNavActivity, item.activityClass))
                 }
             }
+            navItem.setPadding(padH, padV, padH, padV)
             contenedorItems.addView(navItem)
         }
+    }
+
+    private fun crearItemNav(texto: String, @DrawableRes icono: Int, clave: String, onClick: () -> Unit): LinearLayout {
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            isClickable = true
+            tag = clave
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            setOnClickListener { onClick() }
+        }
+
+        val imageView = ImageView(this).apply {
+            id = R.id.nav_icon
+            layoutParams = LinearLayout.LayoutParams(dp(20), dp(20))
+            setImageResource(icono)
+            ImageViewCompat.setImageTintList(this, ContextCompat.getColorStateList(this@BaseNavActivity, R.color.seprise_muted))
+            contentDescription = texto
+        }
+
+        val textView = TextView(this).apply {
+            id = R.id.nav_text
+            text = texto
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.text_nav))
+            setTextColor(getColor(R.color.seprise_muted))
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                topMargin = dp(2)
+            }
+        }
+
+        container.addView(imageView)
+        container.addView(textView)
+        return container
     }
 
     private fun obtenerNombrePersonaLogueada(): String {
@@ -195,5 +223,5 @@ abstract class BaseNavActivity : AppCompatActivity() {
         return SessionState.userId ?: ""
     }
 
-    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+    protected fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 }
