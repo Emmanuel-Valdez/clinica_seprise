@@ -49,6 +49,10 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".insumos.ReporteConsumosActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".estudios.GestionEstudiosActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />

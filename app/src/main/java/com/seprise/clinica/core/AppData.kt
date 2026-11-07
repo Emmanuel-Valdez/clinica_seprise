@@ -7,6 +7,7 @@ import com.seprise.clinica.models.Circuito
 import com.seprise.clinica.models.Especialidad
 import com.seprise.clinica.models.EstadoTurno
 import com.seprise.clinica.models.Estudio
+import com.seprise.clinica.models.ConsumoInsumo
 import com.seprise.clinica.models.Insumo
 import com.seprise.clinica.models.LiquidacionHonorario
 import com.seprise.clinica.models.Medico
@@ -182,12 +183,14 @@ object AppData {
     )
 
     val INSUMOS = mutableListOf(
-        Insumo(id = 1, nombre = "Jeringa", cantidad = 120),
-        Insumo(id = 2, nombre = "Algodón", cantidad = 20),
-        Insumo(id = 3, nombre = "Venda", cantidad = 100),
-        Insumo(id = 4, nombre = "Guantes de nitrilo", cantidad = 45),
-        Insumo(id = 5, nombre = "Alcohol en gel", cantidad = 5),
-        Insumo(id = 6, nombre = "Gasas", cantidad = 60),
-        Insumo(id = 7, nombre = "Solución fisiológica", cantidad = 30)
+        Insumo(id = 1, nombre = "Jeringa", cantidad = 120, fechaVencimiento = hoy.plusMonths(6)),
+        Insumo(id = 2, nombre = "Algodón", cantidad = 20, fechaVencimiento = hoy.plusYears(100)),
+        Insumo(id = 3, nombre = "Venda", cantidad = 100, fechaVencimiento = hoy.plusMonths(3)),
+        Insumo(id = 4, nombre = "Guantes de nitrilo", cantidad = 45, fechaVencimiento = hoy.plusMonths(8)),
+        Insumo(id = 5, nombre = "Alcohol en gel", cantidad = 5, fechaVencimiento = hoy.minusDays(10)),
+        Insumo(id = 6, nombre = "Gasas", cantidad = 60, fechaVencimiento = hoy.plusYears(100)),
+        Insumo(id = 7, nombre = "Solución fisiológica", cantidad = 30, fechaVencimiento = hoy.plusDays(20))
     )
+
+    val CONSUMOS = mutableListOf<ConsumoInsumo>()
 }

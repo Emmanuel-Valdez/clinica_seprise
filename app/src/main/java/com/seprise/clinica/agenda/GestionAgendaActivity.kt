@@ -16,15 +16,11 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Agenda
 import com.seprise.clinica.models.Circuito
 import com.seprise.clinica.models.EstadoTurno
@@ -37,29 +33,21 @@ import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeParseException
 
-class GestionAgendaActivity : AppCompatActivity() {
+class GestionAgendaActivity : com.seprise.clinica.shell.BaseNavActivity() {
+
+    override fun getContentLayoutId() = R.layout.activity_gestion_agenda
+    override fun getActiveNavItemKey() = "agenda"
 
     private lateinit var containerMedicos: LinearLayout
     private lateinit var etBuscarMedico: EditText
     private lateinit var rgCircuitoAgenda: RadioGroup
     private lateinit var btnCargarAgendaEstudios: Button
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_gestion_agenda)
-
-        val mainView = findViewById<View>(R.id.main)
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        containerMedicos = findViewById(R.id.container_medicos)
-        etBuscarMedico = findViewById(R.id.et_buscar_medico)
-        rgCircuitoAgenda = findViewById(R.id.rg_circuito_agenda)
-        btnCargarAgendaEstudios = findViewById(R.id.btn_cargar_agenda_estudios)
+    override fun onContentViewCreated(view: View) {
+        containerMedicos = view.findViewById(R.id.container_medicos)
+        etBuscarMedico = view.findViewById(R.id.et_buscar_medico)
+        rgCircuitoAgenda = view.findViewById(R.id.rg_circuito_agenda)
+        btnCargarAgendaEstudios = view.findViewById(R.id.btn_cargar_agenda_estudios)
 
         rgCircuitoAgenda.setOnCheckedChangeListener { _, _ ->
             cargarLista(etBuscarMedico.text.toString())
@@ -80,7 +68,6 @@ class GestionAgendaActivity : AppCompatActivity() {
         cargarLista()
     }
 
-    /** Carga la lista según el circuito seleccionado (Consultorio Externo o Estudios Clínicos). */
     private fun cargarLista(filtro: String = "") {
         containerMedicos.removeAllViews()
 
@@ -99,7 +86,6 @@ class GestionAgendaActivity : AppCompatActivity() {
         }
     }
 
-    /** Renderiza la lista de médicos para la gestión de su agenda en Consultorio Externo. */
     private fun cargarMedicosConsultorio(filtro: String) {
         val medicosBase = if (SessionState.rol == Rol.MEDICO && SessionState.loggedPersonId != null) {
             AppData.MEDICOS.filter { it.id == SessionState.loggedPersonId }
@@ -155,7 +141,6 @@ class GestionAgendaActivity : AppCompatActivity() {
         }
     }
 
-    /** Renderiza la lista de agendas configuradas para Estudios Clínicos / Análisis. */
     private fun cargarAgendasEstudios(filtro: String) {
         val agendasEstudios = AppData.AGENDAS.filter { it.circuito == Circuito.ESTUDIOS_CLINICOS }
         val filtroNorm = normalizarTexto(filtro)
@@ -203,7 +188,6 @@ class GestionAgendaActivity : AppCompatActivity() {
         containerMedicos.addView(tvVacio)
     }
 
-    /** Abre el modal para cargar agenda a un Médico (tomando la especialidad del objeto médico). */
     private fun abrirModalCargarAgenda(medico: Medico) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_cargar_agenda, null)
 
@@ -293,7 +277,6 @@ class GestionAgendaActivity : AppCompatActivity() {
         }
     }
 
-    /** Abre el modal para cargar una agenda del circuito Análisis Clínicos / Estudios. */
     private fun abrirModalCargarAgendaEstudios() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_cargar_agenda, null)
 
@@ -329,7 +312,6 @@ class GestionAgendaActivity : AppCompatActivity() {
 
         configurarHoraPicker(etHoraInicio, LocalTime.of(8, 0))
         configurarHoraPicker(etHoraFin, LocalTime.of(16, 0))
-        // ponytail: el modelo solo tiene especialidades médicas; 15 min para todas hasta que exista fisio/salud mental.
         etDuracionCita.setText("15")
 
         val dialog = AlertDialog.Builder(this)
@@ -387,7 +369,6 @@ class GestionAgendaActivity : AppCompatActivity() {
         }
     }
 
-    /** Muestra los datos de la agenda configurada para un médico. */
     private fun mostrarDetalleAgendaDialog(medico: Medico, agenda: Agenda) {
         val diasStr = agenda.diasSemana.joinToString(", ") { it.name }
 
@@ -447,7 +428,6 @@ class GestionAgendaActivity : AppCompatActivity() {
         builder.show()
     }
 
-    /** Muestra los datos de una agenda de estudio clínico con la grilla de horarios disponibles y turnos reservados. */
     private fun mostrarDetalleAgendaEstudioDialog(agenda: Agenda) {
         val diasStr = agenda.diasSemana.joinToString(", ") { it.name }
 
@@ -503,7 +483,6 @@ class GestionAgendaActivity : AppCompatActivity() {
         builder.show()
     }
 
-    /** Abre el modal para modificar una agenda existente de un médico. */
     private fun abrirModalModificarAgenda(medico: Medico, agenda: Agenda) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_cargar_agenda, null)
 

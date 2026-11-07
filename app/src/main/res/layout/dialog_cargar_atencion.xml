@@ -159,5 +159,38 @@
             android:inputType="numberDecimal"
             android:layout_marginBottom="12dp" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/seprise_ink"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Insumos consumidos:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink"
+            android:layout_marginBottom="4dp" />
+
+        <CheckBox
+            android:id="@+id/cb_sin_insumos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sin insumos"
+            android:layout_marginBottom="4dp" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/container_insumos_atencion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
     </LinearLayout>
 </ScrollView>

@@ -10,21 +10,21 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
+import com.seprise.clinica.insumos.InsumosManager
+import com.seprise.clinica.models.EstadoEstudio
 import com.seprise.clinica.models.Estudio
+import com.seprise.clinica.models.Insumo
 import com.seprise.clinica.models.Paciente
 import com.seprise.clinica.models.Servicio
 import java.text.Normalizer
@@ -32,29 +32,20 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeParseException
 
-class GestionEstudiosActivity : AppCompatActivity() {
+class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
+
+    override fun getContentLayoutId() = R.layout.activity_gestion_estudios
+    override fun getActiveNavItemKey() = "estudios"
 
     private lateinit var containerEstudios: LinearLayout
     private lateinit var etBuscarEstudio: EditText
     private lateinit var btnCargarEstudio: Button
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_gestion_estudios)
+    override fun onContentViewCreated(view: View) {
+        containerEstudios = view.findViewById(R.id.container_estudios)
+        etBuscarEstudio = view.findViewById(R.id.et_buscar_estudio)
+        btnCargarEstudio = view.findViewById(R.id.btn_cargar_estudio)
 
-        val mainView = findViewById<View>(R.id.main)
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        containerEstudios = findViewById(R.id.container_estudios)
-        etBuscarEstudio = findViewById(R.id.et_buscar_estudio)
-        btnCargarEstudio = findViewById(R.id.btn_cargar_estudio)
-
-        // El botón para cargar estudios solo lo ve el Administrativo
         if (SessionState.rol == Rol.ADMINISTRATIVO) {
             btnCargarEstudio.visibility = View.VISIBLE
             btnCargarEstudio.setOnClickListener {
@@ -75,15 +66,14 @@ class GestionEstudiosActivity : AppCompatActivity() {
         cargarEstudios()
     }
 
-    /** Carga y renderiza los estudios según el rol del usuario logueado. */
     private fun cargarEstudios(filtro: String = "") {
         containerEstudios.removeAllViews()
 
-        // Si es Paciente, solo ve sus propios estudios
-        val estudiosBase = if (SessionState.rol == Rol.PACIENTE && SessionState.loggedPersonId != null) {
-            AppData.ESTUDIOS.filter { it.pacienteId == SessionState.loggedPersonId }
+        val esPaciente = SessionState.rol == Rol.PACIENTE
+        val estudiosBase = if (esPaciente && SessionState.loggedPersonId != null) {
+            EstudiosManager.obtenerEstudiosPorPaciente(SessionState.loggedPersonId!!)
         } else {
-            AppData.ESTUDIOS
+            EstudiosManager.obtenerEstudiosActivos()
         }
 
         val filtroNorm = normalizarTexto(filtro)
@@ -112,29 +102,100 @@ class GestionEstudiosActivity : AppCompatActivity() {
         }
 
         for (estudio in estudiosFiltrados) {
-            val item = LayoutInflater.from(this).inflate(R.layout.item_estudio, containerEstudios, false)
-
-            val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_estudio)
-            val tvPaciente = item.findViewById<TextView>(R.id.tv_paciente_estudio)
-            val tvFecha = item.findViewById<TextView>(R.id.tv_fecha_estudio)
-            val tvInfo = item.findViewById<TextView>(R.id.tv_info_estudio)
-
-            val paciente = AppData.PACIENTES.find { it.id == estudio.pacienteId }
-
-            tvNombre.text = "Estudio: ${estudio.nombre}"
-            tvPaciente.text = "Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}"
-            tvFecha.text = "Fecha: ${estudio.fecha} ${estudio.hora}"
-            tvInfo.text = if (estudio.observaciones.isNotEmpty()) "Observaciones: ${estudio.observaciones}" else "Sin observaciones"
-
-            item.setOnClickListener {
-                mostrarDetalleEstudioDialog(estudio)
-            }
-
-            containerEstudios.addView(item)
+            agregarItemEstudio(estudio, esPaciente)
         }
     }
 
-    /** Modal para que el Administrativo cargue un nuevo estudio a un paciente. */
+    private fun agregarItemEstudio(estudio: Estudio, esPaciente: Boolean) {
+        val item = LayoutInflater.from(this).inflate(R.layout.item_estudio, containerEstudios, false)
+
+        val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_estudio)
+        val tvPaciente = item.findViewById<TextView>(R.id.tv_paciente_estudio)
+        val tvFecha = item.findViewById<TextView>(R.id.tv_fecha_estudio)
+        val tvInfo = item.findViewById<TextView>(R.id.tv_info_estudio)
+        val tvEstado = item.findViewById<TextView>(R.id.tv_estado_estudio)
+        val tvNroOrden = item.findViewById<TextView>(R.id.tv_nro_orden_estudio)
+        val tvComprobanteInfo = item.findViewById<TextView>(R.id.tv_comprobante_info)
+        val containerAcciones = item.findViewById<LinearLayout>(R.id.container_acciones_estudio)
+        val btnMarcarInformado = item.findViewById<Button>(R.id.btn_marcar_informado)
+        val btnAnular = item.findViewById<Button>(R.id.btn_anular_estudio)
+        val btnComprobante = item.findViewById<Button>(R.id.btn_comprobante_retiro)
+
+        val paciente = AppData.PACIENTES.find { it.id == estudio.pacienteId }
+
+        tvNombre.text = "Estudio: ${estudio.nombre}"
+        tvPaciente.text = "Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}"
+        tvFecha.text = "Fecha: ${estudio.fecha} ${estudio.hora}"
+        tvInfo.text = if (estudio.observaciones.isNotEmpty()) "Observaciones: ${estudio.observaciones}" else "Sin observaciones"
+
+        if (estudio.nroOrden.isNotEmpty()) {
+            tvNroOrden.text = "Orden: ${estudio.nroOrden}"
+            tvNroOrden.visibility = View.VISIBLE
+        } else {
+            tvNroOrden.visibility = View.GONE
+        }
+
+        actualizarEstadoBadge(tvEstado, estudio.estado)
+
+        if (estudio.comprobanteRetirado) {
+            tvComprobanteInfo.text = "Retirado: ${estudio.fechaRetiro} | Comprobante: ${estudio.nroComprobante}"
+            tvComprobanteInfo.visibility = View.VISIBLE
+        } else {
+            tvComprobanteInfo.visibility = View.GONE
+        }
+
+        if (!esPaciente && SessionState.rol == Rol.ADMINISTRATIVO) {
+            containerAcciones.visibility = View.VISIBLE
+
+            if (estudio.estado == EstadoEstudio.PENDIENTE) {
+                btnMarcarInformado.visibility = View.VISIBLE
+                btnMarcarInformado.setOnClickListener {
+                    EstudiosManager.marcarComoInformado(estudio.id)
+                    cargarEstudios(etBuscarEstudio.text.toString())
+                }
+            }
+
+            if (estudio.estado != EstadoEstudio.ANULADO && !estudio.comprobanteRetirado) {
+                btnAnular.visibility = View.VISIBLE
+                btnAnular.setOnClickListener {
+                    mostrarDialogAnular(estudio)
+                }
+
+                btnComprobante.visibility = View.VISIBLE
+                btnComprobante.setOnClickListener {
+                    mostrarDialogComprobante(estudio)
+                }
+            }
+        }
+
+        item.setOnClickListener {
+            mostrarDetalleEstudioDialog(estudio)
+        }
+
+        containerEstudios.addView(item)
+    }
+
+    private fun actualizarEstadoBadge(tvEstado: TextView, estado: EstadoEstudio) {
+        when (estado) {
+            EstadoEstudio.PENDIENTE -> {
+                tvEstado.text = "PENDIENTE"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_warn))
+            }
+            EstadoEstudio.INFORMADO -> {
+                tvEstado.text = "INFORMADO"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_blue))
+            }
+            EstadoEstudio.ANULADO -> {
+                tvEstado.text = "ANULADO"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_error))
+            }
+            EstadoEstudio.RETIRADO -> {
+                tvEstado.text = "RETIRADO"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_success))
+            }
+        }
+    }
+
     private fun abrirModalCargarEstudio() {
         if (AppData.PACIENTES.isEmpty()) {
             Toast.makeText(this, "No hay pacientes registrados en el sistema", Toast.LENGTH_LONG).show()
@@ -176,6 +237,8 @@ class GestionEstudiosActivity : AppCompatActivity() {
         adapterTipo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerTipo.adapter = adapterTipo
 
+        val etNroOrden = dialogView.findViewById<EditText>(R.id.et_nro_orden_estudio)
+        val etAutorizacionOS = dialogView.findViewById<EditText>(R.id.et_autorizacion_os_estudio)
         val etFecha = dialogView.findViewById<EditText>(R.id.et_fecha_estudio)
         val etHora = dialogView.findViewById<EditText>(R.id.et_hora_estudio)
         val etObservaciones = dialogView.findViewById<EditText>(R.id.et_observaciones_estudio)
@@ -205,6 +268,44 @@ class GestionEstudiosActivity : AppCompatActivity() {
 
         dialog.show()
 
+        val cbSinInsumos = dialogView.findViewById<CheckBox>(R.id.cb_sin_insumos_estudio)
+        val containerInsumos = dialogView.findViewById<LinearLayout>(R.id.container_insumos_estudio)
+        val insumosActivos = AppData.INSUMOS.filter { it.activo }
+        val insumoRows = mutableListOf<Pair<CheckBox, EditText>>()
+
+        for (insumo in insumosActivos) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setPadding(8, 4, 8, 4)
+                gravity = android.view.Gravity.CENTER_VERTICAL
+            }
+            val cb = CheckBox(this).apply {
+                text = insumo.nombre
+                setTextColor(ContextCompat.getColor(this@GestionEstudiosActivity, R.color.seprise_ink))
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            val etCantidad = EditText(this).apply {
+                hint = "Cant"
+                inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                setText("1")
+                layoutParams = LinearLayout.LayoutParams(100, LinearLayout.LayoutParams.WRAP_CONTENT)
+                setBackgroundResource(R.drawable.bg_input)
+                setPadding(8, 0, 8, 0)
+                textSize = 13f
+            }
+            row.addView(cb)
+            row.addView(etCantidad)
+            containerInsumos.addView(row)
+            insumoRows.add(Pair(cb, etCantidad))
+        }
+
+        cbSinInsumos.setOnCheckedChangeListener { _, isChecked ->
+            for ((cb, _) in insumoRows) {
+                cb.isEnabled = !isChecked
+                if (isChecked) cb.isChecked = false
+            }
+        }
+
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val textoIngresado = actvPaciente.text.toString().trim()
             val paciente = pacienteSeleccionado ?: pacientesActivos.find {
@@ -216,7 +317,14 @@ class GestionEstudiosActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val nroOrden = etNroOrden.text.toString().trim()
+            if (nroOrden.isEmpty()) {
+                Toast.makeText(this, "El N° de orden médica es obligatorio", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val tipoEstudio = spinnerTipo.selectedItem.toString()
+            val autorizacionOS = etAutorizacionOS.text.toString().trim()
             val fechaStr = etFecha.text.toString().trim()
             val horaStr = etHora.text.toString().trim()
             val observaciones = etObservaciones.text.toString().trim()
@@ -235,17 +343,41 @@ class GestionEstudiosActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val seleccionados = mutableListOf<Pair<Insumo, Int>>()
+            if (!cbSinInsumos.isChecked) {
+                for ((cb, et) in insumoRows) {
+                    if (cb.isChecked) {
+                        val nombre = cb.text.toString()
+                        val insumo = insumosActivos.find { it.nombre == nombre } ?: continue
+                        val cantidad = et.text.toString().toIntOrNull() ?: 1
+                        seleccionados.add(Pair(insumo, cantidad))
+                    }
+                }
+                if (seleccionados.isEmpty()) {
+                    Toast.makeText(this, "Debe seleccionar insumos o marcar 'sin insumos'", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+            }
+
+            val estudioId = (AppData.ESTUDIOS.maxOfOrNull { it.id } ?: 0) + 1
+
             val nuevoEstudio = Estudio(
-                id = (AppData.ESTUDIOS.maxOfOrNull { it.id } ?: 0) + 1,
+                id = estudioId,
                 nombre = tipoEstudio,
                 pacienteId = paciente.id,
                 fecha = fecha,
                 hora = hora,
-                observaciones = observaciones
+                observaciones = observaciones,
+                nroOrden = nroOrden,
+                autorizacionOS = autorizacionOS,
+                insumos = seleccionados.map { it.first }
             )
 
             val creado = EstudiosManager.crearEstudio(nuevoEstudio)
             if (creado) {
+                for ((insumo, cantidad) in seleccionados) {
+                    InsumosManager.consumirInsumo(insumo.id, cantidad, estudioId, "estudio")
+                }
                 Toast.makeText(this, "Estudio cargado con éxito para ${paciente.fullName}", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
                 cargarEstudios(etBuscarEstudio.text.toString())
@@ -255,31 +387,74 @@ class GestionEstudiosActivity : AppCompatActivity() {
         }
     }
 
-    /** Muestra el detalle de un estudio clínico. */
+    private fun mostrarDialogAnular(estudio: Estudio) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_anular_estudio, null)
+        val etMotivo = dialogView.findViewById<EditText>(R.id.et_motivo_anulacion)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Anular", null)
+            .create()
+
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val motivo = etMotivo.text.toString().trim()
+            if (motivo.isEmpty()) {
+                Toast.makeText(this, "El motivo de anulación es obligatorio", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            EstudiosManager.anularEstudio(estudio.id, motivo)
+            Toast.makeText(this, "Estudio anulado correctamente", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+            cargarEstudios(etBuscarEstudio.text.toString())
+        }
+    }
+
+    private fun mostrarDialogComprobante(estudio: Estudio) {
+        val paciente = AppData.PACIENTES.find { it.id == estudio.pacienteId }
+        val nroComprobante = EstudiosManager.marcarComoRetirado(estudio.id)
+
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_comprobante, null)
+        dialogView.findViewById<TextView>(R.id.tv_comprobante_nro).text = "Comprobante: $nroComprobante"
+        dialogView.findViewById<TextView>(R.id.tv_comprobante_paciente).text = "Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}"
+        dialogView.findViewById<TextView>(R.id.tv_comprobante_estudio).text = "Estudio: ${estudio.nombre}"
+        dialogView.findViewById<TextView>(R.id.tv_comprobante_fecha).text = "Fecha de retiro: ${LocalDate.now()}"
+
+        AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setPositiveButton("Cerrar", null)
+            .show()
+
+        cargarEstudios(etBuscarEstudio.text.toString())
+    }
+
     private fun mostrarDetalleEstudioDialog(estudio: Estudio) {
         val paciente = AppData.PACIENTES.find { it.id == estudio.pacienteId }
 
-        val mensaje = """
-            Estudio: ${estudio.nombre}
-            Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}
-            Fecha y Hora: ${estudio.fecha} ${estudio.hora}
-            Observaciones: ${if (estudio.observaciones.isNotEmpty()) estudio.observaciones else "Ninguna"}
-        """.trimIndent()
-
-        val builder = AlertDialog.Builder(this)
-            .setTitle("Detalle del Estudio")
-            .setMessage(mensaje)
-            .setPositiveButton("Cerrar", null)
-
-        if (SessionState.rol == Rol.ADMINISTRATIVO) {
-            builder.setNeutralButton("Eliminar Estudio") { _, _ ->
-                EstudiosManager.eliminarEstudio(estudio.id)
-                Toast.makeText(this, "Estudio eliminado", Toast.LENGTH_SHORT).show()
-                cargarEstudios(etBuscarEstudio.text.toString())
+        val mensaje = buildString {
+            appendLine("Estudio: ${estudio.nombre}")
+            appendLine("Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}")
+            appendLine("Fecha y Hora: ${estudio.fecha} ${estudio.hora}")
+            appendLine("Estado: ${estudio.estado.name}")
+            if (estudio.nroOrden.isNotEmpty()) appendLine("N° Orden: ${estudio.nroOrden}")
+            if (estudio.autorizacionOS.isNotEmpty()) appendLine("Autorización OS: ${estudio.autorizacionOS}")
+            appendLine("Observaciones: ${if (estudio.observaciones.isNotEmpty()) estudio.observaciones else "Ninguna"}")
+            if (estudio.comprobanteRetirado) {
+                appendLine("Retirado: ${estudio.fechaRetiro}")
+                appendLine("Comprobante: ${estudio.nroComprobante}")
+            }
+            if (estudio.estado == EstadoEstudio.ANULADO) {
+                appendLine("Motivo anulación: ${estudio.motivoAnulacion}")
             }
         }
 
-        builder.show()
+        AlertDialog.Builder(this)
+            .setTitle("Detalle del Estudio")
+            .setMessage(mensaje)
+            .setPositiveButton("Cerrar", null)
+            .show()
     }
 
     private fun normalizarTexto(texto: String): String {

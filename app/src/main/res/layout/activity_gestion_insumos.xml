@@ -45,6 +45,23 @@
             android:layout_marginStart="8dp" />
     </LinearLayout>
 
+    <CheckBox
+        android:id="@+id/cb_solo_activos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ver solo activos"
+        android:textColor="@color/seprise_ink"
+        android:textSize="13sp"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btn_ver_consumos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ver consumos por prestación"
+        android:textSize="13sp"
+        android:layout_marginBottom="8dp" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">

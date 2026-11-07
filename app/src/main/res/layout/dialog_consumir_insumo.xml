@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/seprise_blue"
+        android:text="Consumir Insumo"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/tv_insumo_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/seprise_ink"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cantidad a consumir:"
+        android:textStyle="bold"
+        android:textColor="@color/seprise_ink" />
+
+    <EditText
+        android:id="@+id/et_cantidad_consumo"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Ej: 5"
+        android:inputType="number"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tipo de prestación:"
+        android:textStyle="bold"
+        android:textColor="@color/seprise_ink" />
+
+    <RadioGroup
+        android:id="@+id/rg_tipo_prestacion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <RadioButton
+            android:id="@+id/rb_atencion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Atención"
+            android:layout_marginEnd="16dp" />
+
+        <RadioButton
+            android:id="@+id/rb_estudio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Estudio" />
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ID de atención/estudio:"
+        android:textStyle="bold"
+        android:textColor="@color/seprise_ink" />
+
+    <EditText
+        android:id="@+id/et_prestacion_id"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="ID de atención/estudio"
+        android:inputType="number" />
+
+</LinearLayout>

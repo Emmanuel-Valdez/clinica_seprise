@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cu01_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/seprise_bg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="@color/seprise_surface">
+
+        <ImageView
+            android:id="@+id/btn_home_logo"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/seprise_logo"
+            android:scaleType="fitCenter"
+            android:contentDescription="Logo SePrise"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/txt_nombre_usuario"
+            style="@style/Text.SePrise.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="" />
+
+        <Button
+            android:id="@+id/cu01_btn_perfil"
+            style="@style/Widget.SePrise.Button.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="@string/cu01_btn_perfil" />
+
+        <Button
+            android:id="@+id/cu01_btn_logout"
+            style="@style/Widget.SePrise.Button.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/cu01_btn_logout" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/cu01_contenido_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/seprise_surface"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/cu01_nav_items"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="6dp"
+            android:gravity="center_vertical" />
+    </HorizontalScrollView>
+</LinearLayout>

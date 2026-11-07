@@ -9,31 +9,33 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Filter
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.SessionState
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Atencion
 import com.seprise.clinica.models.EstadoTurno
+import com.seprise.clinica.models.Insumo
 import com.seprise.clinica.models.Paciente
 import com.seprise.clinica.models.Turno
+import com.seprise.clinica.insumos.InsumosManager
 import com.seprise.clinica.turnos.TurnosManager
 import java.text.Normalizer
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-class AtencionActivity : AppCompatActivity() {
+class AtencionActivity : com.seprise.clinica.shell.BaseNavActivity() {
+
+    override fun getContentLayoutId() = R.layout.activity_gestion_atencion
+    override fun getActiveNavItemKey() = "atencion"
 
     private lateinit var containerAtenciones: LinearLayout
     private lateinit var etBuscarAtencion: EditText
@@ -42,27 +44,16 @@ class AtencionActivity : AppCompatActivity() {
     private val medicoIdLogueado: Int
         get() = SessionState.loggedPersonId ?: 1
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_gestion_atencion)
-
-        val mainView = findViewById<View>(R.id.main)
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        containerAtenciones = findViewById(R.id.container_atenciones)
-        etBuscarAtencion = findViewById(R.id.et_buscar_atencion)
-        tvMedicoInfo = findViewById(R.id.tv_medico_atencion_info)
+    override fun onContentViewCreated(view: View) {
+        containerAtenciones = view.findViewById(R.id.container_atenciones)
+        etBuscarAtencion = view.findViewById(R.id.et_buscar_atencion)
+        tvMedicoInfo = view.findViewById(R.id.tv_medico_atencion_info)
 
         val medico = AppData.MEDICOS.find { it.id == medicoIdLogueado }
         val medicoNombre = medico?.fullName ?: "Dr/a. Médico"
         tvMedicoInfo.text = "Médico atendiendo: Dr/a. $medicoNombre"
 
-        findViewById<Button>(R.id.btn_cargar_atencion).setOnClickListener {
+        view.findViewById<Button>(R.id.btn_cargar_atencion).setOnClickListener {
             abrirModalCargarAtencion()
         }
 
@@ -196,8 +187,6 @@ class AtencionActivity : AppCompatActivity() {
             }
         }
 
-        // Si modifica el texto después de seleccionar,
-        // deja de considerarse válida la selección anterior.
         actvPaciente.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -218,6 +207,41 @@ class AtencionActivity : AppCompatActivity() {
             .create()
 
         dialog.show()
+
+        val cbSinInsumos = dialogView.findViewById<CheckBox>(R.id.cb_sin_insumos)
+        val containerInsumos = dialogView.findViewById<LinearLayout>(R.id.container_insumos_atencion)
+        val insumosActivos = AppData.INSUMOS.filter { it.activo }
+        val insumoRows = mutableListOf<Pair<CheckBox, EditText>>()
+
+        for (insumo in insumosActivos) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setPadding(8, 4, 8, 4)
+                gravity = android.view.Gravity.CENTER_VERTICAL
+            }
+            val cb = CheckBox(this).apply {
+                text = insumo.nombre
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            val etCantidad = EditText(this).apply {
+                layoutParams = LinearLayout.LayoutParams(100, LinearLayout.LayoutParams.WRAP_CONTENT)
+                inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                setText("1")
+                hint = "Cant"
+                textSize = 13f
+            }
+            row.addView(cb)
+            row.addView(etCantidad)
+            containerInsumos.addView(row)
+            insumoRows.add(cb to etCantidad)
+        }
+
+        cbSinInsumos.setOnCheckedChangeListener { _, isChecked ->
+            insumoRows.forEach { (cb, et) ->
+                cb.isEnabled = !isChecked
+                et.isEnabled = !isChecked
+            }
+        }
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val textoIngresado = actvPaciente.text.toString().trim()
@@ -257,6 +281,21 @@ class AtencionActivity : AppCompatActivity() {
                 }
             }
 
+            val insumosSeleccionados = mutableListOf<Insumo>()
+            if (!cbSinInsumos.isChecked) {
+                for ((cb, et) in insumoRows) {
+                    if (cb.isChecked) {
+                        val cantidad = et.text.toString().toIntOrNull() ?: 1
+                        val insumo = insumosActivos.find { it.nombre == cb.text } ?: continue
+                        insumosSeleccionados.add(insumo.copy(cantidad = cantidad))
+                    }
+                }
+                if (insumosSeleccionados.isEmpty()) {
+                    Toast.makeText(this, "Debe seleccionar insumos o marcar 'sin insumos'", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+            }
+
             val nuevaAtencion = Atencion(
                 id = (AppData.ATENCIONES.maxOfOrNull { it.id } ?: 0) + 1,
                 medicoId = medicoIdLogueado,
@@ -265,6 +304,7 @@ class AtencionActivity : AppCompatActivity() {
                 fecha = LocalDate.now(),
                 hora = LocalTime.now(),
                 duracion = duracion,
+                insumos = insumosSeleccionados,
                 observaciones = etObservaciones.text.toString().trim(),
                 valorConsulta = valor,
                 diagnostico = diagnostico,
@@ -272,6 +312,9 @@ class AtencionActivity : AppCompatActivity() {
             )
 
             if (AtencionManager.registrarAtencion(nuevaAtencion)) {
+                for (insumo in insumosSeleccionados) {
+                    InsumosManager.consumirInsumo(insumo.id, insumo.cantidad, nuevaAtencion.id, "atencion")
+                }
                 Toast.makeText(this, "Atención registrada con éxito para ${paciente.fullName}", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
                 cargarAtenciones(etBuscarAtencion.text.toString())
@@ -319,7 +362,6 @@ class AtencionActivity : AppCompatActivity() {
     }
 }
 
-/** Autocomplete que busca por nombre, apellido o n° de empadronamiento (sin tildes). */
 private class PacienteAdapter(
     context: Context,
     private val pacientes: List<Paciente>,

@@ -12,37 +12,25 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Paciente
 import java.text.Normalizer
 
-class GestionPacientesActivity : AppCompatActivity() {
+class GestionPacientesActivity : com.seprise.clinica.shell.BaseNavActivity() {
+
+    override fun getContentLayoutId() = R.layout.activity_gestion_pacientes
+    override fun getActiveNavItemKey() = "pacientes"
 
     private lateinit var containerPacientes: LinearLayout
     private lateinit var etBuscarPaciente: EditText
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_gestion_pacientes)
+    override fun onContentViewCreated(view: View) {
+        containerPacientes = view.findViewById(R.id.container_pacientes)
+        etBuscarPaciente = view.findViewById(R.id.et_buscar_paciente)
 
-        val mainView = findViewById<View>(R.id.main)
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        containerPacientes = findViewById(R.id.container_pacientes)
-        etBuscarPaciente = findViewById(R.id.et_buscar_paciente)
-
-        findViewById<Button>(R.id.btn_agregar_paciente).setOnClickListener {
+        view.findViewById<Button>(R.id.btn_agregar_paciente).setOnClickListener {
             abrirModalAgregarPaciente()
         }
 
@@ -57,7 +45,6 @@ class GestionPacientesActivity : AppCompatActivity() {
         cargarPacientes()
     }
 
-    /** Muestra el listado de pacientes con opción de filtrado por nombre, apellido o DNI. */
     private fun cargarPacientes(filtro: String = "") {
         containerPacientes.removeAllViews()
 
@@ -114,7 +101,6 @@ class GestionPacientesActivity : AppCompatActivity() {
         containerPacientes.addView(tvVacio)
     }
 
-    /** Abre el modal para agregar un nuevo paciente. */
     private fun abrirModalAgregarPaciente() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_agregar_paciente, null)
 
@@ -171,7 +157,6 @@ class GestionPacientesActivity : AppCompatActivity() {
         }
     }
 
-    /** Abre el modal para editar o inhabilitar/habilitar un paciente existente. */
     private fun abrirModalEditarPaciente(paciente: Paciente) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_agregar_paciente, null)
 
