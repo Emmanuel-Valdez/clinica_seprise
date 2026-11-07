@@ -15,15 +15,11 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Estudio
 import com.seprise.clinica.models.Paciente
 import com.seprise.clinica.models.Servicio
@@ -32,29 +28,20 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeParseException
 
-class GestionEstudiosActivity : AppCompatActivity() {
+class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
+
+    override fun getContentLayoutId() = R.layout.activity_gestion_estudios
+    override fun getActiveNavItemKey() = "estudios"
 
     private lateinit var containerEstudios: LinearLayout
     private lateinit var etBuscarEstudio: EditText
     private lateinit var btnCargarEstudio: Button
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_gestion_estudios)
+    override fun onContentViewCreated(view: View) {
+        containerEstudios = view.findViewById(R.id.container_estudios)
+        etBuscarEstudio = view.findViewById(R.id.et_buscar_estudio)
+        btnCargarEstudio = view.findViewById(R.id.btn_cargar_estudio)
 
-        val mainView = findViewById<View>(R.id.main)
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        containerEstudios = findViewById(R.id.container_estudios)
-        etBuscarEstudio = findViewById(R.id.et_buscar_estudio)
-        btnCargarEstudio = findViewById(R.id.btn_cargar_estudio)
-
-        // El botón para cargar estudios solo lo ve el Administrativo
         if (SessionState.rol == Rol.ADMINISTRATIVO) {
             btnCargarEstudio.visibility = View.VISIBLE
             btnCargarEstudio.setOnClickListener {
@@ -75,11 +62,9 @@ class GestionEstudiosActivity : AppCompatActivity() {
         cargarEstudios()
     }
 
-    /** Carga y renderiza los estudios según el rol del usuario logueado. */
     private fun cargarEstudios(filtro: String = "") {
         containerEstudios.removeAllViews()
 
-        // Si es Paciente, solo ve sus propios estudios
         val estudiosBase = if (SessionState.rol == Rol.PACIENTE && SessionState.loggedPersonId != null) {
             AppData.ESTUDIOS.filter { it.pacienteId == SessionState.loggedPersonId }
         } else {
@@ -134,7 +119,6 @@ class GestionEstudiosActivity : AppCompatActivity() {
         }
     }
 
-    /** Modal para que el Administrativo cargue un nuevo estudio a un paciente. */
     private fun abrirModalCargarEstudio() {
         if (AppData.PACIENTES.isEmpty()) {
             Toast.makeText(this, "No hay pacientes registrados en el sistema", Toast.LENGTH_LONG).show()
@@ -255,7 +239,6 @@ class GestionEstudiosActivity : AppCompatActivity() {
         }
     }
 
-    /** Muestra el detalle de un estudio clínico. */
     private fun mostrarDetalleEstudioDialog(estudio: Estudio) {
         val paciente = AppData.PACIENTES.find { it.id == estudio.pacienteId }
 

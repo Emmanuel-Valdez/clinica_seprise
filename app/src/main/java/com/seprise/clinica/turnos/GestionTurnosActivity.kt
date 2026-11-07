@@ -16,15 +16,11 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Agenda
 import com.seprise.clinica.models.Circuito
 import com.seprise.clinica.models.EstadoTurno
@@ -35,7 +31,10 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeParseException
 
-class GestionTurnosActivity : AppCompatActivity() {
+class GestionTurnosActivity : com.seprise.clinica.shell.BaseNavActivity() {
+
+    override fun getContentLayoutId() = R.layout.activity_gestion_turnos
+    override fun getActiveNavItemKey() = "turnos"
 
     private lateinit var containerMedicos: LinearLayout
     private lateinit var etBuscarMedico: EditText
@@ -43,23 +42,12 @@ class GestionTurnosActivity : AppCompatActivity() {
     private lateinit var rgFiltroAdmin: RadioGroup
     private lateinit var tvSubtitulo: TextView
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_gestion_turnos)
-
-        val mainView = findViewById<View>(R.id.main)
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        containerMedicos = findViewById(R.id.container_medicos)
-        etBuscarMedico = findViewById(R.id.et_buscar_medico)
-        rgCircuitoTurnos = findViewById(R.id.rg_circuito_turnos)
-        rgFiltroAdmin = findViewById(R.id.rg_filtro_turnos_admin)
-        tvSubtitulo = findViewById(R.id.tv_subtitulo_gestion)
+    override fun onContentViewCreated(view: View) {
+        containerMedicos = view.findViewById(R.id.container_medicos)
+        etBuscarMedico = view.findViewById(R.id.et_buscar_medico)
+        rgCircuitoTurnos = view.findViewById(R.id.rg_circuito_turnos)
+        rgFiltroAdmin = view.findViewById(R.id.rg_filtro_turnos_admin)
+        tvSubtitulo = view.findViewById(R.id.tv_subtitulo_gestion)
 
         if (SessionState.rol == Rol.ADMINISTRATIVO) {
             rgFiltroAdmin.visibility = View.VISIBLE
@@ -97,7 +85,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         cargarLista()
     }
 
-    /** Carga la lista según el filtro activo. */
     private fun cargarLista(filtro: String = "") {
         containerMedicos.removeAllViews()
 
@@ -118,7 +105,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         }
     }
 
-    /** Renderiza la lista de pacientes con sus turnos asignados para el rol Administrativo. */
     private fun cargarTurnosPacientesAdmin(filtro: String) {
         val filtroNorm = normalizarTexto(filtro)
         val pacientesBase = AppData.PACIENTES.filter { it.activo }
@@ -166,7 +152,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         }
     }
 
-    /** Renderiza la lista de médicos con sus turnos asignados para el rol Administrativo. */
     private fun cargarTurnosMedicosAdmin(filtro: String) {
         val filtroNorm = normalizarTexto(filtro)
         val medicosBase = AppData.MEDICOS
@@ -215,7 +200,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         }
     }
 
-    /** Renderiza la lista de médicos de Consultorio Externo. */
     private fun cargarMedicosConsultorio(filtro: String) {
         val medicosBase = if (SessionState.rol == Rol.MEDICO && SessionState.loggedPersonId != null) {
             AppData.MEDICOS.filter { it.id == SessionState.loggedPersonId }
@@ -270,7 +254,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         }
     }
 
-    /** Renderiza la lista de Estudios Clínicos disponibles para reservar turno. */
     private fun cargarEstudiosClinicos(filtro: String) {
         val agendasEstudios = AppData.AGENDAS.filter { it.circuito == Circuito.ESTUDIOS_CLINICOS }
         val filtroNorm = normalizarTexto(filtro)
@@ -322,7 +305,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         containerMedicos.addView(tvVacio)
     }
 
-    /** Abre el modal para sacar turno con un Médico de Consultorio Externo. */
     private fun abrirModalSacarTurnoMedico(medico: Medico, agenda: Agenda) {
         val infoStr = "Médico: Dr/a. ${medico.fullName}\nEspecialidad: ${nombreEspecialidad(medico.especialidad.name)}\nDías de atención: ${agenda.diasSemana.joinToString(", ") { it.name }}\nHorario: ${agenda.horaInicio} a ${agenda.horaFin}"
         mostrarDialogoFormularioTurno(
@@ -333,7 +315,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         )
     }
 
-    /** Abre el modal para sacar turno para un Estudio Clínico. */
     private fun abrirModalSacarTurnoEstudio(agenda: Agenda) {
         val infoStr = "Estudio Clínico: ${agenda.servicio.name}\nDías de atención: ${agenda.diasSemana.joinToString(", ") { it.name }}\nHorario: ${agenda.horaInicio} a ${agenda.horaFin}\nAyuno: ${if (agenda.requiereAyuno) "Sí" else "No"}"
         mostrarDialogoFormularioTurno(
@@ -344,7 +325,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         )
     }
 
-    /** Modal unificado para reserva de turno. */
     private fun mostrarDialogoFormularioTurno(titulo: String, infoText: String, medicoId: Int, agenda: Agenda) {
         if (AppData.PACIENTES.isEmpty()) {
             Toast.makeText(this, "No hay pacientes registrados en el sistema", Toast.LENGTH_LONG).show()
@@ -517,7 +497,6 @@ class GestionTurnosActivity : AppCompatActivity() {
         return slots.filter { it !in ocupados }
     }
 
-    /** Muestra la lista de turnos reservados. */
     private fun mostrarTurnosDialog(nombreHeader: String, turnos: List<Turno>) {
         if (turnos.isEmpty()) {
             AlertDialog.Builder(this)

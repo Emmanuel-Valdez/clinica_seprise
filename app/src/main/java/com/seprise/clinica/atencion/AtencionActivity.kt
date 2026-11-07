@@ -15,14 +15,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.SessionState
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Atencion
 import com.seprise.clinica.models.EstadoTurno
 import com.seprise.clinica.models.Paciente
@@ -33,7 +29,10 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-class AtencionActivity : AppCompatActivity() {
+class AtencionActivity : com.seprise.clinica.shell.BaseNavActivity() {
+
+    override fun getContentLayoutId() = R.layout.activity_gestion_atencion
+    override fun getActiveNavItemKey() = "atencion"
 
     private lateinit var containerAtenciones: LinearLayout
     private lateinit var etBuscarAtencion: EditText
@@ -42,27 +41,16 @@ class AtencionActivity : AppCompatActivity() {
     private val medicoIdLogueado: Int
         get() = SessionState.loggedPersonId ?: 1
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_gestion_atencion)
-
-        val mainView = findViewById<View>(R.id.main)
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        containerAtenciones = findViewById(R.id.container_atenciones)
-        etBuscarAtencion = findViewById(R.id.et_buscar_atencion)
-        tvMedicoInfo = findViewById(R.id.tv_medico_atencion_info)
+    override fun onContentViewCreated(view: View) {
+        containerAtenciones = view.findViewById(R.id.container_atenciones)
+        etBuscarAtencion = view.findViewById(R.id.et_buscar_atencion)
+        tvMedicoInfo = view.findViewById(R.id.tv_medico_atencion_info)
 
         val medico = AppData.MEDICOS.find { it.id == medicoIdLogueado }
         val medicoNombre = medico?.fullName ?: "Dr/a. Médico"
         tvMedicoInfo.text = "Médico atendiendo: Dr/a. $medicoNombre"
 
-        findViewById<Button>(R.id.btn_cargar_atencion).setOnClickListener {
+        view.findViewById<Button>(R.id.btn_cargar_atencion).setOnClickListener {
             abrirModalCargarAtencion()
         }
 
@@ -196,8 +184,6 @@ class AtencionActivity : AppCompatActivity() {
             }
         }
 
-        // Si modifica el texto después de seleccionar,
-        // deja de considerarse válida la selección anterior.
         actvPaciente.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -319,7 +305,6 @@ class AtencionActivity : AppCompatActivity() {
     }
 }
 
-/** Autocomplete que busca por nombre, apellido o n° de empadronamiento (sin tildes). */
 private class PacienteAdapter(
     context: Context,
     private val pacientes: List<Paciente>,

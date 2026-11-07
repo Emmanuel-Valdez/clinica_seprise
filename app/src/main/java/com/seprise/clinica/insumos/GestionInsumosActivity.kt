@@ -11,37 +11,25 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Insumo
 import java.text.Normalizer
 
-class GestionInsumosActivity : AppCompatActivity() {
+class GestionInsumosActivity : com.seprise.clinica.shell.BaseNavActivity() {
+
+    override fun getContentLayoutId() = R.layout.activity_gestion_insumos
+    override fun getActiveNavItemKey() = "insumos"
 
     private lateinit var containerInsumos: LinearLayout
     private lateinit var etBuscarInsumo: EditText
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_gestion_insumos)
+    override fun onContentViewCreated(view: View) {
+        containerInsumos = view.findViewById(R.id.container_insumos)
+        etBuscarInsumo = view.findViewById(R.id.et_buscar_insumo)
 
-        val mainView = findViewById<View>(R.id.main)
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        containerInsumos = findViewById(R.id.container_insumos)
-        etBuscarInsumo = findViewById(R.id.et_buscar_insumo)
-
-        findViewById<Button>(R.id.btn_agregar_insumo).setOnClickListener {
+        view.findViewById<Button>(R.id.btn_agregar_insumo).setOnClickListener {
             abrirModalAgregarInsumo()
         }
 
@@ -56,7 +44,6 @@ class GestionInsumosActivity : AppCompatActivity() {
         cargarInsumos()
     }
 
-    /** Muestra el listado de insumos y su stock con opción de filtrado. */
     private fun cargarInsumos(filtro: String = "") {
         containerInsumos.removeAllViews()
 
@@ -101,7 +88,6 @@ class GestionInsumosActivity : AppCompatActivity() {
         containerInsumos.addView(tvVacio)
     }
 
-    /** Abre el modal para agregar un nuevo insumo. */
     private fun abrirModalAgregarInsumo() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_agregar_insumo, null)
 
@@ -144,7 +130,6 @@ class GestionInsumosActivity : AppCompatActivity() {
         }
     }
 
-    /** Abre el modal para editar o eliminar un insumo existente. */
     private fun abrirModalEditarInsumo(insumo: Insumo) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_agregar_insumo, null)
 

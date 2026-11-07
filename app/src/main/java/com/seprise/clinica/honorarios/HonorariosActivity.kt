@@ -11,14 +11,10 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
-import com.seprise.clinica.core.enableSePriseEdgeToEdge
 import com.seprise.clinica.models.Atencion
 import com.seprise.clinica.models.LiquidacionHonorario
 import java.text.NumberFormat
@@ -27,7 +23,10 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Locale
 
-class HonorariosActivity : AppCompatActivity() {
+class HonorariosActivity : com.seprise.clinica.shell.BaseNavActivity() {
+
+    override fun getContentLayoutId() = R.layout.activity_honorarios
+    override fun getActiveNavItemKey() = "honorarios"
 
     private lateinit var spinnerMedico: Spinner
     private lateinit var etDesde: EditText
@@ -41,36 +40,19 @@ class HonorariosActivity : AppCompatActivity() {
     private var desdeActual: LocalDate? = null
     private var hastaActual: LocalDate? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableSePriseEdgeToEdge()
-        setContentView(R.layout.activity_honorarios)
-
-        val mainView = findViewById<View>(R.id.main)
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val margen = dp(20)
-            v.setPadding(
-                systemBars.left + margen,
-                systemBars.top + margen,
-                systemBars.right + margen,
-                systemBars.bottom + margen
-            )
-            insets
-        }
-
+    override fun onContentViewCreated(view: View) {
         if (SessionState.rol != Rol.ADMINISTRATIVO) {
             Toast.makeText(this, R.string.cu06_sin_permiso, Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
-        spinnerMedico = findViewById(R.id.spinner_medico_honorarios)
-        etDesde = findViewById(R.id.et_honorario_desde)
-        etHasta = findViewById(R.id.et_honorario_hasta)
-        tvResumen = findViewById(R.id.tv_resumen_honorarios)
-        containerHonorarios = findViewById(R.id.container_honorarios)
-        btnLiquidar = findViewById(R.id.btn_liquidar_honorarios)
+        spinnerMedico = view.findViewById(R.id.spinner_medico_honorarios)
+        etDesde = view.findViewById(R.id.et_honorario_desde)
+        etHasta = view.findViewById(R.id.et_honorario_hasta)
+        tvResumen = view.findViewById(R.id.tv_resumen_honorarios)
+        containerHonorarios = view.findViewById(R.id.container_honorarios)
+        btnLiquidar = view.findViewById(R.id.btn_liquidar_honorarios)
 
         val medicos = AppData.MEDICOS.map { "Dr/a. ${it.fullName} · ${nombreEspecialidad(it.especialidad.name)}" }
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicos)
@@ -81,7 +63,7 @@ class HonorariosActivity : AppCompatActivity() {
         etDesde.setText(hoy.withDayOfMonth(1).toString())
         etHasta.setText(hoy.withDayOfMonth(hoy.lengthOfMonth()).toString())
 
-        findViewById<Button>(R.id.btn_calcular_honorarios).setOnClickListener { calcular() }
+        view.findViewById<Button>(R.id.btn_calcular_honorarios).setOnClickListener { calcular() }
         btnLiquidar.setOnClickListener { confirmarLiquidacion() }
 
         calcular()
@@ -213,8 +195,6 @@ class HonorariosActivity : AppCompatActivity() {
     private fun fechaLarga(fecha: LocalDate): String = fecha.format(FECHA)
 
     private fun moneda(valor: Double): String = MONEDA.format(valor)
-
-    private fun dp(valor: Int): Int = (valor * resources.displayMetrics.density).toInt()
 
     private fun nombreEspecialidad(valor: String): String = when (valor) {
         "CARDIOLOGIA" -> "Cardiología"
