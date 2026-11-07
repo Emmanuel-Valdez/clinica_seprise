@@ -20,6 +20,7 @@ import com.seprise.clinica.R
 import com.seprise.clinica.core.AppData
 import com.seprise.clinica.core.Rol
 import com.seprise.clinica.core.SessionState
+import com.seprise.clinica.models.EstadoEstudio
 import com.seprise.clinica.models.Estudio
 import com.seprise.clinica.models.Paciente
 import com.seprise.clinica.models.Servicio
@@ -65,10 +66,11 @@ class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
     private fun cargarEstudios(filtro: String = "") {
         containerEstudios.removeAllViews()
 
-        val estudiosBase = if (SessionState.rol == Rol.PACIENTE && SessionState.loggedPersonId != null) {
-            AppData.ESTUDIOS.filter { it.pacienteId == SessionState.loggedPersonId }
+        val esPaciente = SessionState.rol == Rol.PACIENTE
+        val estudiosBase = if (esPaciente && SessionState.loggedPersonId != null) {
+            EstudiosManager.obtenerEstudiosPorPaciente(SessionState.loggedPersonId!!)
         } else {
-            AppData.ESTUDIOS
+            EstudiosManager.obtenerEstudiosActivos()
         }
 
         val filtroNorm = normalizarTexto(filtro)
@@ -97,25 +99,97 @@ class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
         }
 
         for (estudio in estudiosFiltrados) {
-            val item = LayoutInflater.from(this).inflate(R.layout.item_estudio, containerEstudios, false)
+            agregarItemEstudio(estudio, esPaciente)
+        }
+    }
 
-            val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_estudio)
-            val tvPaciente = item.findViewById<TextView>(R.id.tv_paciente_estudio)
-            val tvFecha = item.findViewById<TextView>(R.id.tv_fecha_estudio)
-            val tvInfo = item.findViewById<TextView>(R.id.tv_info_estudio)
+    private fun agregarItemEstudio(estudio: Estudio, esPaciente: Boolean) {
+        val item = LayoutInflater.from(this).inflate(R.layout.item_estudio, containerEstudios, false)
 
-            val paciente = AppData.PACIENTES.find { it.id == estudio.pacienteId }
+        val tvNombre = item.findViewById<TextView>(R.id.tv_nombre_estudio)
+        val tvPaciente = item.findViewById<TextView>(R.id.tv_paciente_estudio)
+        val tvFecha = item.findViewById<TextView>(R.id.tv_fecha_estudio)
+        val tvInfo = item.findViewById<TextView>(R.id.tv_info_estudio)
+        val tvEstado = item.findViewById<TextView>(R.id.tv_estado_estudio)
+        val tvNroOrden = item.findViewById<TextView>(R.id.tv_nro_orden_estudio)
+        val tvComprobanteInfo = item.findViewById<TextView>(R.id.tv_comprobante_info)
+        val containerAcciones = item.findViewById<LinearLayout>(R.id.container_acciones_estudio)
+        val btnMarcarInformado = item.findViewById<Button>(R.id.btn_marcar_informado)
+        val btnAnular = item.findViewById<Button>(R.id.btn_anular_estudio)
+        val btnComprobante = item.findViewById<Button>(R.id.btn_comprobante_retiro)
 
-            tvNombre.text = "Estudio: ${estudio.nombre}"
-            tvPaciente.text = "Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}"
-            tvFecha.text = "Fecha: ${estudio.fecha} ${estudio.hora}"
-            tvInfo.text = if (estudio.observaciones.isNotEmpty()) "Observaciones: ${estudio.observaciones}" else "Sin observaciones"
+        val paciente = AppData.PACIENTES.find { it.id == estudio.pacienteId }
 
-            item.setOnClickListener {
-                mostrarDetalleEstudioDialog(estudio)
+        tvNombre.text = "Estudio: ${estudio.nombre}"
+        tvPaciente.text = "Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}"
+        tvFecha.text = "Fecha: ${estudio.fecha} ${estudio.hora}"
+        tvInfo.text = if (estudio.observaciones.isNotEmpty()) "Observaciones: ${estudio.observaciones}" else "Sin observaciones"
+
+        if (estudio.nroOrden.isNotEmpty()) {
+            tvNroOrden.text = "Orden: ${estudio.nroOrden}"
+            tvNroOrden.visibility = View.VISIBLE
+        } else {
+            tvNroOrden.visibility = View.GONE
+        }
+
+        actualizarEstadoBadge(tvEstado, estudio.estado)
+
+        if (estudio.comprobanteRetirado) {
+            tvComprobanteInfo.text = "Retirado: ${estudio.fechaRetiro} | Comprobante: ${estudio.nroComprobante}"
+            tvComprobanteInfo.visibility = View.VISIBLE
+        } else {
+            tvComprobanteInfo.visibility = View.GONE
+        }
+
+        if (!esPaciente && SessionState.rol == Rol.ADMINISTRATIVO) {
+            containerAcciones.visibility = View.VISIBLE
+
+            if (estudio.estado == EstadoEstudio.PENDIENTE) {
+                btnMarcarInformado.visibility = View.VISIBLE
+                btnMarcarInformado.setOnClickListener {
+                    EstudiosManager.marcarComoInformado(estudio.id)
+                    cargarEstudios(etBuscarEstudio.text.toString())
+                }
             }
 
-            containerEstudios.addView(item)
+            if (estudio.estado != EstadoEstudio.ANULADO && !estudio.comprobanteRetirado) {
+                btnAnular.visibility = View.VISIBLE
+                btnAnular.setOnClickListener {
+                    mostrarDialogAnular(estudio)
+                }
+
+                btnComprobante.visibility = View.VISIBLE
+                btnComprobante.setOnClickListener {
+                    mostrarDialogComprobante(estudio)
+                }
+            }
+        }
+
+        item.setOnClickListener {
+            mostrarDetalleEstudioDialog(estudio)
+        }
+
+        containerEstudios.addView(item)
+    }
+
+    private fun actualizarEstadoBadge(tvEstado: TextView, estado: EstadoEstudio) {
+        when (estado) {
+            EstadoEstudio.PENDIENTE -> {
+                tvEstado.text = "PENDIENTE"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_warn))
+            }
+            EstadoEstudio.INFORMADO -> {
+                tvEstado.text = "INFORMADO"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_blue))
+            }
+            EstadoEstudio.ANULADO -> {
+                tvEstado.text = "ANULADO"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_error))
+            }
+            EstadoEstudio.RETIRADO -> {
+                tvEstado.text = "RETIRADO"
+                tvEstado.setTextColor(ContextCompat.getColor(this, R.color.seprise_success))
+            }
         }
     }
 
@@ -160,6 +234,8 @@ class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
         adapterTipo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerTipo.adapter = adapterTipo
 
+        val etNroOrden = dialogView.findViewById<EditText>(R.id.et_nro_orden_estudio)
+        val etAutorizacionOS = dialogView.findViewById<EditText>(R.id.et_autorizacion_os_estudio)
         val etFecha = dialogView.findViewById<EditText>(R.id.et_fecha_estudio)
         val etHora = dialogView.findViewById<EditText>(R.id.et_hora_estudio)
         val etObservaciones = dialogView.findViewById<EditText>(R.id.et_observaciones_estudio)
@@ -200,7 +276,14 @@ class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
                 return@setOnClickListener
             }
 
+            val nroOrden = etNroOrden.text.toString().trim()
+            if (nroOrden.isEmpty()) {
+                Toast.makeText(this, "El N° de orden médica es obligatorio", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val tipoEstudio = spinnerTipo.selectedItem.toString()
+            val autorizacionOS = etAutorizacionOS.text.toString().trim()
             val fechaStr = etFecha.text.toString().trim()
             val horaStr = etHora.text.toString().trim()
             val observaciones = etObservaciones.text.toString().trim()
@@ -225,7 +308,9 @@ class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
                 pacienteId = paciente.id,
                 fecha = fecha,
                 hora = hora,
-                observaciones = observaciones
+                observaciones = observaciones,
+                nroOrden = nroOrden,
+                autorizacionOS = autorizacionOS
             )
 
             val creado = EstudiosManager.crearEstudio(nuevoEstudio)
@@ -239,30 +324,74 @@ class GestionEstudiosActivity : com.seprise.clinica.shell.BaseNavActivity() {
         }
     }
 
+    private fun mostrarDialogAnular(estudio: Estudio) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_anular_estudio, null)
+        val etMotivo = dialogView.findViewById<EditText>(R.id.et_motivo_anulacion)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Anular", null)
+            .create()
+
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val motivo = etMotivo.text.toString().trim()
+            if (motivo.isEmpty()) {
+                Toast.makeText(this, "El motivo de anulación es obligatorio", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            EstudiosManager.anularEstudio(estudio.id, motivo)
+            Toast.makeText(this, "Estudio anulado correctamente", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+            cargarEstudios(etBuscarEstudio.text.toString())
+        }
+    }
+
+    private fun mostrarDialogComprobante(estudio: Estudio) {
+        val paciente = AppData.PACIENTES.find { it.id == estudio.pacienteId }
+        val nroComprobante = EstudiosManager.marcarComoRetirado(estudio.id)
+
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_comprobante, null)
+        dialogView.findViewById<TextView>(R.id.tv_comprobante_nro).text = "Comprobante: $nroComprobante"
+        dialogView.findViewById<TextView>(R.id.tv_comprobante_paciente).text = "Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}"
+        dialogView.findViewById<TextView>(R.id.tv_comprobante_estudio).text = "Estudio: ${estudio.nombre}"
+        dialogView.findViewById<TextView>(R.id.tv_comprobante_fecha).text = "Fecha de retiro: ${LocalDate.now()}"
+
+        AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setPositiveButton("Cerrar", null)
+            .show()
+
+        cargarEstudios(etBuscarEstudio.text.toString())
+    }
+
     private fun mostrarDetalleEstudioDialog(estudio: Estudio) {
         val paciente = AppData.PACIENTES.find { it.id == estudio.pacienteId }
 
-        val mensaje = """
-            Estudio: ${estudio.nombre}
-            Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}
-            Fecha y Hora: ${estudio.fecha} ${estudio.hora}
-            Observaciones: ${if (estudio.observaciones.isNotEmpty()) estudio.observaciones else "Ninguna"}
-        """.trimIndent()
-
-        val builder = AlertDialog.Builder(this)
-            .setTitle("Detalle del Estudio")
-            .setMessage(mensaje)
-            .setPositiveButton("Cerrar", null)
-
-        if (SessionState.rol == Rol.ADMINISTRATIVO) {
-            builder.setNeutralButton("Eliminar Estudio") { _, _ ->
-                EstudiosManager.eliminarEstudio(estudio.id)
-                Toast.makeText(this, "Estudio eliminado", Toast.LENGTH_SHORT).show()
-                cargarEstudios(etBuscarEstudio.text.toString())
+        val mensaje = buildString {
+            appendLine("Estudio: ${estudio.nombre}")
+            appendLine("Paciente: ${paciente?.fullName ?: "ID ${estudio.pacienteId}"}")
+            appendLine("Fecha y Hora: ${estudio.fecha} ${estudio.hora}")
+            appendLine("Estado: ${estudio.estado.name}")
+            if (estudio.nroOrden.isNotEmpty()) appendLine("N° Orden: ${estudio.nroOrden}")
+            if (estudio.autorizacionOS.isNotEmpty()) appendLine("Autorización OS: ${estudio.autorizacionOS}")
+            appendLine("Observaciones: ${if (estudio.observaciones.isNotEmpty()) estudio.observaciones else "Ninguna"}")
+            if (estudio.comprobanteRetirado) {
+                appendLine("Retirado: ${estudio.fechaRetiro}")
+                appendLine("Comprobante: ${estudio.nroComprobante}")
+            }
+            if (estudio.estado == EstadoEstudio.ANULADO) {
+                appendLine("Motivo anulación: ${estudio.motivoAnulacion}")
             }
         }
 
-        builder.show()
+        AlertDialog.Builder(this)
+            .setTitle("Detalle del Estudio")
+            .setMessage(mensaje)
+            .setPositiveButton("Cerrar", null)
+            .show()
     }
 
     private fun normalizarTexto(texto: String): String {

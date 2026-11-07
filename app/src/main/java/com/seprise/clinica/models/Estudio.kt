@@ -12,5 +12,12 @@ data class Estudio(
     val hora: LocalTime = LocalTime.now(),
     val duracion: Int = 15,
     val insumos: List<Insumo> = emptyList(),
-    val observaciones: String = ""
+    val observaciones: String = "",
+    val nroOrden: String = "",
+    val autorizacionOS: String = "",
+    val estado: EstadoEstudio = EstadoEstudio.PENDIENTE,
+    val motivoAnulacion: String = "",
+    val comprobanteRetirado: Boolean = false,
+    val fechaRetiro: LocalDate? = null,
+    val nroComprobante: String = ""
 )

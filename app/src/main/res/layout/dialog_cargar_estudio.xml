@@ -53,6 +53,44 @@
             android:layout_height="48dp"
             android:layout_marginBottom="12dp" />
 
+        <!-- N° de Orden Médica -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="N° de Orden Médica:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_nro_orden_estudio"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Obligatorio"
+            android:inputType="text"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/seprise_ink"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Autorización OS -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Autorización Obra Social:"
+            android:textStyle="bold"
+            android:textColor="@color/seprise_ink" />
+
+        <EditText
+            android:id="@+id/et_autorizacion_os_estudio"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="N° de autorización OS (opcional)"
+            android:inputType="text"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/seprise_ink"
+            android:layout_marginBottom="12dp" />
+
         <!-- Fecha -->
         <TextView
             android:layout_width="wrap_content"

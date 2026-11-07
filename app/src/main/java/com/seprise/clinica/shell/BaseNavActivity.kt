@@ -164,8 +164,9 @@ abstract class BaseNavActivity : AppCompatActivity() {
                 isClickable = true
                 tag = item.clave
                 setOnClickListener {
-                    val intent = Intent(this@BaseNavActivity, item.activityClass)
-                    startActivity(intent)
+                    if (item.clave != getActiveNavItemKey()) {
+                        startActivity(Intent(this@BaseNavActivity, item.activityClass))
+                    }
                 }
             }
             contenedorItems.addView(navItem)
